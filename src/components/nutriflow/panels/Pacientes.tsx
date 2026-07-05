@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { BedDouble, ClipboardList, Eye, LogOut, Pencil, Search, UserPlus } from 'lucide-react'
+import { BedDouble, ClipboardList, Eye, LogOut, Lock, Pencil, Search, UserPlus } from 'lucide-react'
 import { dischargePatient, listPatients, listPlans } from '../../../lib/api'
 import { toast } from '../../../lib/toast'
 import { useAuth } from '../../../lib/authContext'
@@ -65,7 +65,12 @@ export function Pacientes() {
               <UserPlus size={15} />
               Novo paciente
             </button>
-          ) : null}
+          ) : (
+            <span className="bg bg-n" title="Cadastro e edição de pacientes são feitos pela equipe médica">
+              <Lock size={12} />
+              Somente consulta
+            </span>
+          )}
         </div>
       </div>
       <div className="tabs">
