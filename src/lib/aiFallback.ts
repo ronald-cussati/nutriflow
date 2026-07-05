@@ -1,76 +1,123 @@
-import type { Meals, Patient } from './types'
+import { MEAL_KEYS, type Meals, type Patient, type StockItem } from './types'
 
-// Gerador determinístico usado quando a API do Gemini não está disponível
-// (offline, sem chave, ou quota excedida). Compõe um plano coerente a partir
-// das condições clínicas, restrições e tipo de dieta do paciente — assim a
-// demonstração de "Gerar Dieta com IA" nunca falha na apresentação.
+// Gerador clínico determinístico usado quando o Gemini está indisponível
+// (offline / sem chave / quota). Compõe as refeições EXCLUSIVAMENTE a partir
+// dos ingredientes disponíveis no estoque da cozinha, filtrando alergias e
+// restrições — garantindo que a demonstração nunca falhe e que o cardápio
+// reflita de fato o que existe na cozinha.
 
-type Profile = {
-  base: string[]
-  avoid: string[]
+type Category = 'carb' | 'protein' | 'veg' | 'fruit' | 'dairy' | 'egg' | 'light'
+
+const CATEGORY_KEYWORDS: Record<Category, string[]> = {
+  carb: ['arroz', 'pão', 'pao', 'macarrão', 'macarrao', 'batata', 'aveia', 'tapioca', 'mandioca', 'milho', 'biscoito', 'polvilho', 'farinha', 'purê', 'pure'],
+  protein: ['frango', 'peixe', 'pescada', 'carne', 'boi', 'peito', 'filé', 'file', 'atum', 'feijão', 'feijao', 'lentilha', 'grão', 'grao', 'proteína', 'proteina'],
+  veg: ['abobrinha', 'cenoura', 'chuchu', 'legume', 'abóbora', 'abobora', 'espinafre', 'couve', 'alface', 'vagem', 'brócolis', 'brocolis', 'beterraba', 'repolho', 'tomate'],
+  fruit: ['maçã', 'maca', 'banana', 'mamão', 'mamao', 'melão', 'melao', 'laranja', 'pera', 'fruta', 'manga'],
+  dairy: ['iogurte', 'leite', 'queijo', 'requeijão', 'requeijao', 'coalhada'],
+  egg: ['ovo'],
+  light: ['gelatina', 'chá', 'cha', 'café', 'cafe', 'suco', 'sopa'],
 }
 
-function clinicalProfile(patient: Patient): Profile {
-  const cond = patient.conditions.map((c) => c.toLowerCase()).join(' ')
-  const restr = patient.restrictions.map((c) => c.toLowerCase()).join(' ')
-  const all = `${cond} ${restr} ${patient.diet_type.toLowerCase()}`
-  const avoid: string[] = []
-  const base: string[] = []
-
-  if (all.includes('renal') || all.includes('potássio') || all.includes('potassio')) {
-    avoid.push('banana', 'laranja', 'tomate', 'batata', 'folhas verde-escuras')
-    base.push('legumes cozidos com água descartada', 'proteína de alto valor biológico em porção controlada')
-  }
-  if (all.includes('diab')) {
-    avoid.push('açúcar', 'doces', 'sucos adoçados')
-    base.push('carboidratos complexos', 'fibras', 'adoçante quando necessário')
-  }
-  if (all.includes('hiperten') || all.includes('sódio') || all.includes('sodio') || all.includes('hipossód')) {
-    avoid.push('sal em excesso', 'embutidos', 'enlatados')
-    base.push('temperos naturais (ervas, alho, limão)')
-  }
-  if (all.includes('celía') || all.includes('celia') || all.includes('glúten') || all.includes('gluten')) {
-    avoid.push('trigo', 'pães comuns', 'aveia contaminada')
-    base.push('tapioca', 'arroz', 'milho')
-  }
-  if (all.includes('disfagia') || all.includes('pastosa')) {
-    base.push('preparações pastosas e homogêneas', 'líquidos espessados')
-  }
-  if (patient.food_allergies.length) {
-    avoid.push(...patient.food_allergies.map((f) => f.toLowerCase()))
-  }
-  return { base, avoid }
+// Alergias/intolerâncias → termos de ingredientes que devem ser evitados.
+const ALLERGEN_EXPANSION: Record<string, string[]> = {
+  glúten: ['pão', 'pao', 'macarrão', 'macarrao', 'aveia', 'farinha', 'biscoito', 'trigo', 'cevada'],
+  gluten: ['pão', 'pao', 'macarrão', 'macarrao', 'aveia', 'farinha', 'biscoito', 'trigo', 'cevada'],
+  lactose: ['iogurte', 'leite', 'queijo', 'requeijão', 'requeijao', 'coalhada'],
+  ovo: ['ovo'],
 }
 
-export function generateFallbackPlan(patient: Patient): { meals: Meals; score: number } {
-  const { base, avoid } = clinicalProfile(patient)
-  const pastosa = patient.diet_type === 'Pastosa'
-  const note = base.length ? ` (${base.slice(0, 2).join('; ')})` : ''
+function normalize(s: string) {
+  return s.toLowerCase().trim()
+}
 
-  const meals: Meals = pastosa
-    ? {
-        breakfast: 'Mingau de aveia sem grumos + banana amassada + chá morno espessado',
-        morningSnack: 'Purê de maçã sem casca',
-        lunch: 'Purê de batata-doce + carne moída bem cozida e desfiada + creme de legumes' + note,
-        afternoonSnack: 'Vitamina de frutas espessada',
-        dinner: 'Creme de abóbora com frango desfiado',
-        supper: 'Iogurte cremoso natural',
-      }
-    : {
-        breakfast: 'Pão adequado à dieta (1 fatia) + proteína magra (ovo ou queijo branco) + bebida quente sem açúcar',
-        morningSnack: 'Fruta permitida em porção controlada + oleaginosas (se liberadas)',
-        lunch: 'Porção de carboidrato + proteína magra grelhada + legumes cozidos' + note,
-        afternoonSnack: 'Iogurte natural + 1 fibra (aveia/chia, se permitido)',
-        dinner: 'Sopa ou preparação leve com proteína + vegetais cozidos',
-        supper: 'Chá sem açúcar + porção pequena de proteína (queijo branco)',
-      }
+function categorize(name: string): Category | null {
+  const n = normalize(name)
+  for (const cat of Object.keys(CATEGORY_KEYWORDS) as Category[]) {
+    if (CATEGORY_KEYWORDS[cat].some((k) => n.includes(k))) return cat
+  }
+  return null
+}
 
-  // Score simbólico: parte de 90 e desconta pela severidade/risco.
-  let score = 90
-  if (patient.nutritional_risk === 'Alto') score -= 16
-  else if (patient.nutritional_risk === 'Moderado') score -= 8
-  score -= Math.min(avoid.length, 6)
-  score = Math.max(60, Math.min(95, score))
+// Retorna os itens de estoque compatíveis com o quadro do paciente, agrupados por categoria.
+export function compatibleStock(patient: Patient, stock: StockItem[]) {
+  const avoid = new Set<string>()
+  for (const a of [...patient.food_allergies, ...patient.restrictions]) {
+    const key = normalize(a)
+    avoid.add(key)
+    for (const [allergen, terms] of Object.entries(ALLERGEN_EXPANSION)) {
+      if (key.includes(allergen)) terms.forEach((t) => avoid.add(t))
+    }
+  }
 
-  return { meals, score }
+  const today = Date.now()
+  const groups: Record<Category, string[]> = { carb: [], protein: [], veg: [], fruit: [], dairy: [], egg: [], light: [] }
+  const all: string[] = []
+
+  for (const item of stock) {
+    const n = normalize(item.name)
+    const expired = item.expiry_date ? new Date(item.expiry_date).getTime() < today : false
+    if (expired) continue
+    if ([...avoid].some((term) => term && n.includes(term))) continue
+    const cat = categorize(item.name)
+    if (!cat) continue
+    groups[cat].push(item.name)
+    all.push(item.name)
+  }
+  return { groups, all }
+}
+
+export function generateFallbackPlan(
+  patient: Patient,
+  stock: StockItem[],
+): { meals: Meals; score: number; ingredients: string[] } {
+  const { groups, all } = compatibleStock(patient, stock)
+  const pastosa = patient.diet_type === 'Pastosa' || patient.restrictions.some((r) => /pastos|disfagia/i.test(r))
+  const used = new Set<string>()
+
+  const pick = (cat: Category) => {
+    const list = groups[cat]
+    if (!list.length) return null
+    const item = list[used.size % list.length]
+    used.add(item)
+    return item
+  }
+  const prep = (name: string | null) => {
+    if (!name) return null
+    if (pastosa) return `${name} (preparo pastoso)`
+    return name
+  }
+
+  if (!all.length) {
+    const empty = MEAL_KEYS.reduce((acc, k) => {
+      acc[k] = 'Reponha o estoque da cozinha — sem ingredientes compatíveis disponíveis.'
+      return acc
+    }, {} as Meals)
+    return { meals: empty, score: 0, ingredients: [] }
+  }
+
+  const carb = () => pick('carb') ?? pick('light')
+  const protein = () => pick('protein') ?? pick('egg') ?? pick('dairy')
+  const veg = () => pick('veg')
+  const light = () => pick('light') ?? pick('fruit') ?? pick('dairy')
+  const cooked = (name: string | null) => (name ? (pastosa ? `${name} (preparo pastoso)` : `${name} cozida`) : null)
+
+  const line = (parts: Array<string | null>) => parts.filter(Boolean).join(pastosa ? ', ' : ' + ') || 'Conforme disponibilidade do estoque'
+
+  const meals: Meals = {
+    breakfast: line([groups.dairy[0] ?? pick('egg'), prep(carb())]),
+    morningSnack: line([pick('fruit') ?? pick('light')]),
+    lunch: line([prep(carb()), prep(protein()), cooked(veg())]),
+    afternoonSnack: line([light()]),
+    dinner: line([prep(protein()), cooked(veg()), groups.carb[0] ? `${groups.carb[0]} (porção leve)` : null]),
+    supper: line([groups.dairy[0] ?? pick('light')]),
+  }
+
+  // Score simbólico: cobertura de refeições e categorias, ajustado pelo risco.
+  const categoriesPresent = (Object.keys(groups) as Category[]).filter((c) => groups[c].length).length
+  let score = 62 + categoriesPresent * 5
+  if (patient.nutritional_risk === 'Alto') score -= 6
+  else if (patient.nutritional_risk === 'Moderado') score -= 3
+  score = Math.max(60, Math.min(96, score))
+
+  return { meals, score, ingredients: [...used] }
 }

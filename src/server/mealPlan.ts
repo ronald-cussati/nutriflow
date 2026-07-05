@@ -35,9 +35,15 @@ Medicamentos em uso: ${data.medications.join(', ') || 'Nenhum'}
 Alergias a medicamentos: ${data.drug_allergies.join(', ') || 'Nenhuma'}
 Alergias/intolerâncias alimentares: ${data.food_allergies.join(', ') || 'Nenhuma'}
 Notas: ${data.notes || 'Nenhuma'}
-Estoque disponível: ${data.stock || 'Não informado'}
 
-ATENÇÃO: jamais inclua alimentos aos quais o paciente tem alergia/intolerância. Respeite o tipo de dieta e as restrições rigorosamente.
+INGREDIENTES DISPONÍVEIS NA COZINHA (use SOMENTE estes): ${data.stock || 'Nenhum informado'}
+
+REGRAS OBRIGATÓRIAS:
+1. Monte as refeições EXCLUSIVAMENTE com os ingredientes disponíveis na cozinha listados acima. Não inclua nada que não esteja nessa lista.
+2. Jamais inclua alimentos aos quais o paciente tem alergia/intolerância.
+3. Respeite rigorosamente o tipo de dieta e as restrições.
+4. Se algum ingrediente da lista for incompatível com o quadro do paciente, simplesmente não o utilize.
+Mantenha cada refeição curta e objetiva (uma linha).
 
 Responda SOMENTE em JSON, sem markdown, sem texto extra. Formato exato:
 {"breakfast":"...","morningSnack":"...","lunch":"...","afternoonSnack":"...","dinner":"...","supper":"..."}

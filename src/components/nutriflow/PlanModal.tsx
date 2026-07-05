@@ -3,9 +3,9 @@ import { Save, Sparkles } from 'lucide-react'
 import { Modal } from './Modal'
 import { listStock, savePlanMeals } from '../../lib/api'
 import { generateMealPlan } from '../../server/mealPlan'
-import { generateFallbackPlan } from '../../lib/aiFallback'
+import { compatibleStock, generateFallbackPlan } from '../../lib/aiFallback'
 import { toast } from '../../lib/toast'
-import { MEAL_KEYS, MEAL_TYPES, type MealPlan, type Meals, type Patient } from '../../lib/types'
+import { MEAL_KEYS, MEAL_TYPES, type MealPlan, type Meals, type Patient, type StockItem } from '../../lib/types'
 
 export function PlanModal({
   open,
@@ -25,6 +25,8 @@ export function PlanModal({
   const [meals, setMeals] = useState<Meals | null>(null)
   const [aiGenerated, setAiGenerated] = useState(false)
   const [score, setScore] = useState<number | null>(null)
+  const [used, setUsed] = useState<string[]>([])
+  const [stock, setStock] = useState<StockItem[]>([])
   const [saving, setSaving] = useState(false)
   const [generating, setGenerating] = useState(false)
 
@@ -33,6 +35,8 @@ export function PlanModal({
     setMeals(plan?.meals ?? null)
     setAiGenerated(plan?.generated_by_ai ?? false)
     setScore(plan?.score ?? null)
+    setUsed([])
+    listStock().then(setStock)
   }, [open, plan])
 
   if (!patient || !plan || !meals) {
@@ -43,16 +47,16 @@ export function PlanModal({
     ) : null
   }
 
+  const available = patient ? compatibleStock(patient, stock).all : []
+
   async function handleGenerate() {
     if (!patient) return
     setGenerating(true)
     try {
-      const stockItems = await listStock()
-      const stockText = stockItems.map((s) => `${s.name} (${s.quantity}${s.unit})`).join(', ')
+      const stockText = stock.map((s) => `${s.name} (${s.quantity}${s.unit})`).join(', ')
+      const local = generateFallbackPlan(patient, stock)
       let result: Meals
-      let generatedScore: number
       try {
-        // Caminho principal: IA real (Gemini) via server function.
         result = await generateMealPlan({
           data: {
             name: patient.name,
@@ -69,18 +73,15 @@ export function PlanModal({
             stock: stockText,
           },
         })
-        generatedScore = generateFallbackPlan(patient).score
-        toast('ok', 'IA gerou o plano', 'Revise as sugestões e salve')
+        toast('ok', 'Dieta gerada pela IA', 'Revise as sugestões e aprove')
       } catch {
-        // Fallback determinístico: garante que a demonstração nunca falhe.
-        const fb = generateFallbackPlan(patient)
-        result = fb.meals
-        generatedScore = fb.score
-        toast('in', 'Plano gerado (modo offline)', 'IA indisponível — usei o gerador clínico local')
+        result = local.meals
+        toast('in', 'Dieta gerada (modo offline)', 'IA indisponível — usei o gerador clínico local')
       }
       setMeals(result)
       setAiGenerated(true)
-      setScore(generatedScore)
+      setScore(local.score)
+      setUsed(local.ingredients.length ? local.ingredients : available.slice(0, 8))
     } catch (e) {
       toast('er', 'Erro na geração', (e as Error).message)
     } finally {
@@ -93,7 +94,7 @@ export function PlanModal({
     setSaving(true)
     try {
       await savePlanMeals(plan!.id, meals, { generated_by_ai: aiGenerated, score })
-      toast('ok', 'Plano salvo com sucesso')
+      toast('ok', 'Plano salvo')
       onSaved()
       onClose()
     } catch (e) {
@@ -105,7 +106,7 @@ export function PlanModal({
 
   return (
     <Modal open={open} onClose={onClose} title={`Plano — ${patient.name}`} large>
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: -10, marginBottom: 16 }}>
+      <div className="plan-meta">
         <span className="bg bg-b">Quarto {patient.room}</span>
         <span className="bg bg-n">Dieta {patient.diet_type}</span>
         {patient.food_allergies.map((a) => (
@@ -116,17 +117,27 @@ export function PlanModal({
       </div>
 
       {canEdit ? (
-        <div className="ai-panel">
-          <div className="ai-panel-h"><Sparkles size={16} /> Assistente de dieta com IA</div>
-          <ul>
-            <li>A IA analisa condições, medicações, alergias e o estoque disponível.</li>
-            <li>Respeita rigorosamente restrições e alergias antes de sugerir as refeições.</li>
-            <li>Você revisa, ajusta o texto e aprova — a decisão final é sempre da equipe.</li>
-          </ul>
-          <button className="btn btn-ai btn-sm" style={{ marginTop: 12 }} onClick={handleGenerate} disabled={generating}>
+        <div className="ai-hero">
+          <div className="ai-hero-icon"><Sparkles size={18} /></div>
+          <div className="ai-hero-body">
+            <div className="ai-hero-title">Gerar dieta com IA</div>
+            <p>Monta o cardápio do dia usando só o que há na cozinha, respeitando o quadro clínico.</p>
+          </div>
+          <button className="btn btn-ai" onClick={handleGenerate} disabled={generating}>
             <Sparkles size={15} />
-            {generating ? 'Gerando dieta...' : 'Gerar dieta com IA'}
+            {generating ? 'Gerando...' : 'Gerar'}
           </button>
+        </div>
+      ) : null}
+
+      {used.length ? (
+        <div className="ai-basis">
+          <span className="ai-basis-label">Ingredientes do estoque usados</span>
+          <div className="chip-row">
+            {used.map((i) => (
+              <span className="bg bg-g" key={i}>{i}</span>
+            ))}
+          </div>
         </div>
       ) : null}
 
@@ -137,7 +148,7 @@ export function PlanModal({
             <label>{label}</label>
             <textarea
               className="fc"
-              style={{ minHeight: 62 }}
+              style={{ minHeight: 54 }}
               value={meals[key]}
               disabled={!canEdit}
               onChange={(e) => setMeals({ ...meals, [key]: e.target.value })}
