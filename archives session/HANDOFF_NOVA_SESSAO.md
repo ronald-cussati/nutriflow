@@ -33,27 +33,36 @@ Resumo técnico:
 - `npm run build` e `npx tsc --noEmit` passam limpos. `npm run dev` sobe e faz SSR
   corretamente (testado nesta sessão).
 
-## Bloqueios pendentes (o que NÃO foi possível fazer sozinho)
+## Atualização (mesmo dia, 2026-07-05, depois do handoff original)
 
-1. **A migration SQL ainda não foi rodada no banco Supabase real.** Confirmado nesta sessão
-   com uma query de teste (`select id from profiles limit 1` retornou
-   "Could not find the table 'public.profiles'"). O Claude não tem acesso MCP a esse
-   projeto Supabase específico (fica em uma organização/conta que a ferramenta MCP
-   conectada não enxerga — `get_project`/`execute_sql` retornam "permission denied").
-   **Ação necessária do Ronald:** copiar o conteúdo de `0001_init.sql` (nesta pasta ou em
-   `supabase/migrations/0001_init.sql`) no SQL Editor do painel Supabase e rodar.
+- ✅ **Migration rodada** — Ronald confirmou que já executou `0001_init.sql` no SQL Editor
+  do Supabase. Todas as tabelas e RLS já existem no banco real.
+- ✅ **Admin criado** — rodei `scripts/bootstrap-admin.mjs` com sucesso para o email
+  `ronaldcussati@gmail.com` (senha definida por ele na hora, não repetida aqui por
+  segurança — ele sabe qual é). UID: `fdf80f35-2b84-4189-a627-98ed6280103a`.
+- ✅ **Dev server testado rodando** (`npm run dev`, http://localhost:3000, HTTP 200,
+  SSR conectado) e Ronald foi orientado a testar o login e as telas manualmente no
+  navegador (cadastrar paciente de teste, tentar "Gerar com IA" em Planos Alimentares,
+  criar os demais usuários pela tela Usuários). **Ainda não recebi confirmação dele sobre
+  como foi esse teste manual** — se retomar a sessão, pergunte como foi antes de assumir
+  que está tudo funcionando ponta a ponta (a integração do Gemini em particular ainda não
+  foi validada com uso real, só revisada no código).
 
-2. **Nenhum usuário existe ainda no Supabase Auth desse projeto**, então ninguém consegue
-   logar no app até existir pelo menos 1 admin. Depois que a migration acima rodar, use o
-   script pronto:
-   ```
-   node --env-file=.env scripts/bootstrap-admin.mjs "Nome do Ronald" email@exemplo.com senha123
-   ```
-   Esse script usa a `SUPABASE_SERVICE_ROLE_KEY` do `.env` para criar o usuário de auth E a
-   linha correspondente em `profiles` com papel `admin`, tudo em um comando.
+## Bloqueios pendentes (o que ainda falta)
 
-3. **Deploy na Vercel ainda não foi feito.** Precisa da autorização/login do Ronald quando
-   chegar a hora.
+1. ~~Rodar a migration~~ — **feito**.
+2. ~~Criar o primeiro admin~~ — **feito** (ver acima).
+3. **Validar manualmente no navegador** que login, CRUD de pacientes, geração de plano via
+   IA (Gemini), fluxo de cozinha, estoque, feedbacks e a tela "Meu Plano" (paciente)
+   funcionam de ponta a ponta com o banco real — só foi validado que o servidor sobe e
+   responde HTTP 200, não que cada fluxo funciona.
+4. **Deploy na Vercel ainda não foi feito.** Precisa da autorização/login do Ronald quando
+   chegar a hora, e configurar lá as mesmas variáveis de ambiente do `.env`.
+5. **Push para o GitHub ainda não foi feito** (remote configurado, commits prontos
+   localmente, aguardando autorização explícita — histórias não-relacionadas entre local e
+   remoto, avaliar `--force-with-lease` ou similar ao combinar com o Ronald).
+6. **Rotacionar as chaves** de Supabase (service role) e Gemini depois que o projeto
+   estabilizar, já que passaram pelo histórico do chat.
 
 ## Credenciais
 
