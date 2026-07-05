@@ -1,4 +1,17 @@
+import { ChefHat, HeartPulse, Salad, ShieldCheck, Stethoscope, Utensils, type LucideIcon } from 'lucide-react'
 import type { MealType, RiskLevel, Role } from './types'
+
+export function roleIcon(r?: Role): LucideIcon {
+  const map: Record<Role, LucideIcon> = {
+    medico: Stethoscope,
+    nutricionista: Salad,
+    enfermeiro: HeartPulse,
+    cozinheiro: ChefHat,
+    admin: ShieldCheck,
+    paciente: Utensils,
+  }
+  return r ? map[r] : Utensils
+}
 
 export function riskBadgeClass(risk: RiskLevel) {
   return risk === 'Alto' ? 'bg-r' : risk === 'Moderado' ? 'bg-y' : 'bg-g'
