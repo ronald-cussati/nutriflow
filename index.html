@@ -1,0 +1,1417 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NutriFlow AI — Gestão Nutricional Hospitalar</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#060e1e;--bg-card:#0c1929;--bg-card2:#101f30;--bg-sidebar:#08111e;
+  --b:#182a3e;--b2:#1e3349;--b3:#243d55;
+  --t1:#e2eff9;--t2:#7a9bbf;--t3:#4a6a8a;
+  --acc:#00d4aa;--acc-d:#00d4aa1a;--acc2:#4f8ef7;--acc2-d:#4f8ef71a;
+  --red:#ff4d6d;--red-d:#ff4d6d1a;--yel:#ffb347;--yel-d:#ffb3471a;
+  --r4:4px;--r8:8px;--r12:12px;--r16:16px;
+  --sw:220px;--sh:56px;
+}
+html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);font-size:14px;line-height:1.5;overflow:hidden}
+::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--b2);border-radius:8px}
+
+/* ─── LOGIN ─── */
+#login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);position:relative;overflow:hidden}
+#login-screen::before{content:'';position:absolute;width:700px;height:700px;background:radial-gradient(circle,#00d4aa0e 0%,transparent 65%);top:-200px;right:-150px;pointer-events:none}
+#login-screen::after{content:'';position:absolute;width:400px;height:400px;background:radial-gradient(circle,#4f8ef70a 0%,transparent 65%);bottom:-100px;left:-100px;pointer-events:none}
+.login-box{background:var(--bg-card);border:1px solid var(--b2);border-radius:var(--r16);padding:44px 40px;width:100%;max-width:400px;position:relative;z-index:1;box-shadow:0 8px 40px rgba(0,0,0,.5)}
+.l-logo{text-align:center;margin-bottom:32px}
+.l-icon{width:52px;height:52px;background:linear-gradient(135deg,var(--acc),#00a882);border-radius:14px;display:inline-flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:14px}
+.l-logo h1{font-family:'Outfit',sans-serif;font-size:26px;font-weight:700}
+.l-logo p{color:var(--t3);font-size:12px;margin-top:4px}
+.demo-links{display:flex;flex-direction:column;gap:4px;margin-top:16px;padding-top:16px;border-top:1px solid var(--b)}
+.demo-link{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:var(--bg);border:1px solid var(--b);border-radius:var(--r8);cursor:pointer;transition:all .2s;font-size:12px;color:var(--t2)}
+.demo-link:hover{border-color:var(--acc);color:var(--acc)}
+.demo-link .role-pill{font-size:10px;padding:2px 7px;border-radius:20px}
+
+/* ─── APP SHELL ─── */
+#app{display:none;height:100vh;overflow:hidden}
+#app.on{display:flex}
+
+/* ─── SIDEBAR ─── */
+#sidebar{width:var(--sw);min-width:var(--sw);background:var(--bg-sidebar);border-right:1px solid var(--b);display:flex;flex-direction:column;height:100vh;overflow-y:auto}
+.s-head{padding:18px 16px;border-bottom:1px solid var(--b)}
+.s-logo{display:flex;align-items:center;gap:9px}
+.s-logo .ico{width:32px;height:32px;background:linear-gradient(135deg,var(--acc),#00a882);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.s-logo-t h2{font-family:'Outfit',sans-serif;font-size:15px;font-weight:700;line-height:1.2}
+.s-logo-t span{font-size:10px;color:var(--t3)}
+.s-user{padding:14px 16px;border-bottom:1px solid var(--b);display:flex;align-items:center;gap:10px}
+.u-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0}
+.u-name{font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.u-role{font-size:10px;color:var(--t3)}
+.s-nav{flex:1;padding:12px 10px}
+.nav-sec{font-size:9px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.08em;padding:0 8px;margin:14px 0 5px}
+.nav-sec:first-child{margin-top:0}
+.nav-i{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:var(--r8);cursor:pointer;transition:all .2s;color:var(--t3);font-size:13px;margin-bottom:1px;user-select:none}
+.nav-i:hover{background:var(--bg-card2);color:var(--t1)}
+.nav-i.on{background:var(--acc-d);color:var(--acc)!important;font-weight:500}
+.nav-i .ni{font-size:14px;width:18px;text-align:center;flex-shrink:0}
+.s-foot{padding:10px;border-top:1px solid var(--b)}
+
+/* ─── MAIN ─── */
+#main{flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+#topbar{height:var(--sh);border-bottom:1px solid var(--b);padding:0 22px;display:flex;align-items:center;justify-content:space-between;background:var(--bg-sidebar);flex-shrink:0}
+.tb-title{font-family:'Outfit',sans-serif;font-size:16px;font-weight:600}
+#content{flex:1;overflow-y:auto;padding:22px}
+
+/* ─── PANELS ─── */
+.panel{display:none}.panel.on{display:block}
+
+/* ─── FORMS ─── */
+.fg{margin-bottom:14px}
+.fg label{display:block;font-size:12px;font-weight:500;color:var(--t2);margin-bottom:5px}
+.fc{width:100%;background:var(--bg);border:1px solid var(--b);border-radius:var(--r8);padding:9px 12px;color:var(--t1);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:all .2s}
+.fc:focus{border-color:var(--acc);box-shadow:0 0 0 3px var(--acc-d)}
+select.fc option{background:var(--bg-card)}
+textarea.fc{resize:vertical;min-height:72px}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fr3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+
+/* ─── BUTTONS ─── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 15px;border-radius:var(--r8);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;border:none;outline:none;transition:all .2s;text-decoration:none;white-space:nowrap}
+.btn-p{background:var(--acc);color:#060e1e}.btn-p:hover{background:#00c49a;transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,212,170,.3)}
+.btn-s{background:var(--bg);color:var(--t2);border:1px solid var(--b)}.btn-s:hover{background:var(--b2);color:var(--t1)}
+.btn-d{background:var(--red-d);color:var(--red);border:1px solid rgba(255,77,109,.2)}.btn-d:hover{background:var(--red);color:#fff}
+.btn-w{background:var(--yel-d);color:var(--yel);border:1px solid rgba(255,179,71,.2)}.btn-w:hover{background:var(--yel);color:#060e1e}
+.btn-b{background:var(--acc2-d);color:var(--acc2);border:1px solid rgba(79,142,247,.2)}.btn-b:hover{background:var(--acc2);color:#fff}
+.btn-full{width:100%;justify-content:center}
+.btn-sm{padding:5px 11px;font-size:12px}
+.btn-lg{padding:11px 22px;font-size:14px}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none!important}
+
+/* ─── STATS ─── */
+.sg{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:22px}
+.sc{background:var(--bg-card);border:1px solid var(--b);border-radius:var(--r12);padding:18px;transition:all .2s;position:relative;overflow:hidden}
+.sc:hover{border-color:var(--b2);background:var(--bg-card2)}
+.sc::before{content:attr(data-icon);position:absolute;right:14px;top:14px;font-size:26px;opacity:.25}
+.sc-lbl{font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.sc-val{font-family:'Outfit',sans-serif;font-size:30px;font-weight:700;line-height:1;color:var(--t1);margin-bottom:5px}
+.sc-sub{font-size:12px;color:var(--t2)}
+
+/* ─── CARDS ─── */
+.card{background:var(--bg-card);border:1px solid var(--b);border-radius:var(--r12);padding:18px;margin-bottom:14px}
+.ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.ct{font-family:'Outfit',sans-serif;font-size:14px;font-weight:600}
+.cs{font-size:12px;color:var(--t3);margin-top:2px}
+
+/* ─── TABLE ─── */
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{font-size:10px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;padding:9px 13px;text-align:left;border-bottom:1px solid var(--b)}
+td{padding:11px 13px;border-bottom:1px solid var(--b);color:var(--t2);font-size:13px}
+tr:last-child td{border-bottom:none}
+tr:nth-child(even) td{background:rgba(255,255,255,.012)}
+tr:hover td{background:var(--bg-card2)}
+
+/* ─── BADGES ─── */
+.bg{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:500}
+.bg-g{background:rgba(0,212,170,.12);color:var(--acc);border:1px solid rgba(0,212,170,.2)}
+.bg-b{background:rgba(79,142,247,.12);color:var(--acc2);border:1px solid rgba(79,142,247,.2)}
+.bg-r{background:var(--red-d);color:var(--red);border:1px solid rgba(255,77,109,.2)}
+.bg-y{background:var(--yel-d);color:var(--yel);border:1px solid rgba(255,179,71,.2)}
+.bg-n{background:rgba(255,255,255,.05);color:var(--t3);border:1px solid var(--b)}
+.bg-p{background:rgba(180,100,255,.12);color:#b464ff;border:1px solid rgba(180,100,255,.2)}
+
+/* ─── MODAL ─── */
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px;backdrop-filter:blur(4px)}
+.mo.on{display:flex}
+.mb{background:var(--bg-card);border:1px solid var(--b2);border-radius:var(--r16);padding:26px;width:100%;max-width:540px;max-height:88vh;overflow-y:auto;box-shadow:0 12px 48px rgba(0,0,0,.6)}
+.mb-lg{max-width:680px}
+.mh{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
+.mt{font-family:'Outfit',sans-serif;font-size:17px;font-weight:600}
+.mc{width:28px;height:28px;border-radius:50%;background:var(--bg);border:1px solid var(--b);color:var(--t2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;transition:all .2s;flex-shrink:0}
+.mc:hover{background:var(--red-d);color:var(--red)}
+
+/* ─── TOAST ─── */
+#tc{position:fixed;top:18px;right:18px;z-index:9999;display:flex;flex-direction:column;gap:7px;max-width:320px}
+.toast{background:var(--bg-card);border:1px solid var(--b2);border-radius:var(--r12);padding:11px 14px;display:flex;align-items:flex-start;gap:9px;box-shadow:0 6px 24px rgba(0,0,0,.5);animation:tIn .25s ease;font-size:13px}
+@keyframes tIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+.toast-ico{font-size:16px;flex-shrink:0;margin-top:1px}
+.toast-t{font-weight:500;color:var(--t1)}
+.toast-m{color:var(--t2);font-size:12px;margin-top:1px}
+.toast-ok{border-left:3px solid var(--acc)}.toast-er{border-left:3px solid var(--red)}.toast-wa{border-left:3px solid var(--yel)}.toast-in{border-left:3px solid var(--acc2)}
+
+/* ─── EMPTY ─── */
+.emp{text-align:center;padding:44px 20px;color:var(--t3)}
+.emp .ei{font-size:44px;margin-bottom:14px;opacity:.4}
+.emp h3{font-size:14px;font-weight:500;color:var(--t2);margin-bottom:6px}
+.emp p{font-size:13px}
+
+/* ─── LOADING ─── */
+.ld{display:inline-flex;gap:4px;align-items:center}
+.ld span{width:6px;height:6px;border-radius:50%;background:var(--acc);animation:ldB 1.2s infinite}
+.ld span:nth-child(2){animation-delay:.2s}.ld span:nth-child(3){animation-delay:.4s}
+@keyframes ldB{0%,60%,100%{transform:translateY(0);opacity:.3}30%{transform:translateY(-7px);opacity:1}}
+
+/* ─── KITCHEN CHIPS ─── */
+.kp{background:var(--bg-card);border:1px solid var(--b);border-radius:var(--r12);padding:14px 18px;margin-bottom:10px}
+.kph{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.kp-name{font-weight:600;font-size:13px}
+.kp-room{font-size:11px;color:var(--t3);margin-top:2px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{padding:6px 12px;border-radius:var(--r8);font-size:11px;font-weight:500;cursor:pointer;border:1px solid var(--b);background:var(--bg);color:var(--t2);transition:all .2s;min-width:80px;text-align:center}
+.chip:hover{border-color:var(--acc);color:var(--acc)}
+.chip.prep{background:var(--yel-d);border-color:rgba(255,179,71,.3);color:var(--yel)}
+.chip.pronto{background:var(--acc2-d);border-color:rgba(79,142,247,.3);color:var(--acc2)}
+.chip.entregue{background:var(--acc-d);border-color:rgba(0,212,170,.3);color:var(--acc)}
+.chip .cn{display:block;margin-bottom:2px}
+.chip .cs{font-size:9px;opacity:.7}
+
+/* ─── MEAL PLAN ─── */
+.mp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:12px}
+.mp-i{background:var(--bg);border:1px solid var(--b);border-radius:var(--r8);padding:12px}
+.mp-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--t3);font-weight:600;margin-bottom:6px}
+.mp-txt{font-size:12px;color:var(--t2);line-height:1.5}
+
+/* ─── PAGE HEADER ─── */
+.ph{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px}
+.ph h2{font-family:'Outfit',sans-serif;font-size:21px;font-weight:700}
+.ph p{font-size:12px;color:var(--t3);margin-top:3px}
+.ph-acts{display:flex;gap:8px;flex-shrink:0;align-items:center}
+
+/* ─── FILTERS ─── */
+.filters{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+
+/* ─── PATIENT CARD ─── */
+.pc{background:var(--bg-card);border:1px solid var(--b);border-radius:var(--r12);padding:14px 16px;margin-bottom:9px;display:flex;align-items:center;gap:14px;transition:all .2s}
+.pc:hover{border-color:var(--b2)}
+.pav{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;flex-shrink:0}
+.pi{flex:1;min-width:0}
+.pn{font-weight:600;font-size:13px}
+.pm{font-size:11px;color:var(--t3);margin-top:3px}
+.pa{display:flex;gap:5px;flex-shrink:0}
+
+/* ─── TABS ─── */
+.tabs{display:flex;gap:3px;border-bottom:1px solid var(--b);margin-bottom:16px}
+.tab{padding:7px 14px;font-size:13px;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s}
+.tab:hover{color:var(--t2)}
+.tab.on{color:var(--acc);border-bottom-color:var(--acc);font-weight:500}
+
+/* ─── ALERT BANNER ─── */
+.ab{background:var(--yel-d);border:1px solid rgba(255,179,71,.2);border-radius:var(--r8);padding:10px 14px;font-size:12px;color:var(--yel);margin-bottom:10px;display:flex;align-items:center;gap:7px}
+.ab.danger{background:var(--red-d);border-color:rgba(255,77,109,.2);color:var(--red)}
+
+/* ─── ROLES ─── */
+.r-m{background:rgba(255,77,109,.1);color:#ff4d6d}
+.r-n{background:rgba(0,212,170,.1);color:#00d4aa}
+.r-e{background:rgba(79,142,247,.1);color:#4f8ef7}
+.r-c{background:rgba(255,179,71,.1);color:#ffb347}
+.r-a{background:rgba(180,100,255,.1);color:#b464ff}
+
+/* ─── GRID ─── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+@media(max-width:768px){#sidebar{display:none}.g2{grid-template-columns:1fr}.g3{grid-template-columns:1fr}.fr{grid-template-columns:1fr}.fr3{grid-template-columns:1fr}}
+
+/* ─── STOCK ─── */
+.si{display:flex;align-items:center;gap:10px;padding:10px 13px;border-bottom:1px solid var(--b);transition:all .2s}
+.si:last-child{border-bottom:none}
+.si:nth-child(even){background:rgba(255,255,255,.012)}
+.si:hover{background:var(--bg-card2)}
+.si-name{flex:1;font-size:13px;color:var(--t2)}
+.si-qty{font-size:13px;font-weight:500;min-width:90px}
+.si-exp{font-size:11px;color:var(--t3);min-width:95px}
+.si-acts{display:flex;gap:5px}
+
+/* ─── FEEDBACK ─── */
+.fb-item{padding:14px;border-bottom:1px solid var(--b)}
+.fb-item:last-child{border-bottom:none}
+.stars{color:var(--yel);font-size:16px;letter-spacing:2px}
+
+/* ─── AI response ─── */
+.ai-box{background:linear-gradient(135deg,rgba(0,212,170,.04),rgba(79,142,247,.04));border:1px solid rgba(0,212,170,.15);border-radius:var(--r12);padding:16px;margin-top:12px}
+.ai-tag{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--acc);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+
+/* alert dashboard */
+.alert-i{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--b)}
+.alert-i:last-child{border-bottom:none}
+.alert-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:6px}
+.alert-txt{font-size:12px;color:var(--t2)}
+.alert-time{font-size:11px;color:var(--t3);margin-top:2px}
+</style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div id="tc"></div>
+
+<!-- ═══ LOGIN ═══ -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="l-logo">
+      <div class="l-icon">🥗</div>
+      <h1>NutriFlow AI</h1>
+      <p>Sistema Inteligente de Gestão Nutricional Hospitalar</p>
+    </div>
+    <div class="fg"><label>Email</label><input class="fc" id="l-email" type="email" placeholder="seu@email.com"></div>
+    <div class="fg"><label>Senha</label><input class="fc" id="l-pass" type="password" placeholder="••••••••"></div>
+    <button class="btn btn-p btn-full btn-lg" onclick="doLogin()">Entrar</button>
+    <div class="demo-links" id="demo-links">
+      <div style="font-size:11px;color:var(--t3);margin-bottom:4px">Entrar como demonstração:</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ APP ═══ -->
+<div id="app">
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <div class="s-head">
+      <div class="s-logo">
+        <div class="ico">🥗</div>
+        <div class="s-logo-t"><h2>NutriFlow</h2><span>AI Hospital Nutrition</span></div>
+      </div>
+    </div>
+    <div class="s-user">
+      <div class="u-av" id="s-av"></div>
+      <div style="min-width:0"><div class="u-name" id="s-name"></div><div class="u-role" id="s-role"></div></div>
+    </div>
+    <div class="s-nav" id="s-nav"></div>
+    <div class="s-foot">
+      <button class="btn btn-s btn-full btn-sm" onclick="doLogout()">⬅ Sair</button>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div id="main">
+    <div id="topbar">
+      <div class="tb-title" id="tb-title">Dashboard</div>
+      <div style="display:flex;gap:8px;align-items:center" id="tb-acts"></div>
+    </div>
+    <div id="content">
+      <!-- DASHBOARD -->
+      <div class="panel" id="p-dashboard">
+        <div class="sg" id="dash-stats"></div>
+        <div class="g2">
+          <div class="card"><div class="ch"><div><div class="ct">⚠️ Alertas</div><div class="cs">Eventos recentes</div></div></div><div id="dash-alerts"></div></div>
+          <div class="card"><div class="ch"><div><div class="ct">📋 Pacientes Internados</div><div class="cs">Resumo rápido</div></div></div><div id="dash-patients"></div></div>
+        </div>
+      </div>
+
+      <!-- PACIENTES -->
+      <div class="panel" id="p-pacientes">
+        <div class="ph">
+          <div><h2>Pacientes</h2><p>Gerenciamento de pacientes internados</p></div>
+          <div class="ph-acts">
+            <input class="fc" style="width:200px" id="pt-search" placeholder="🔍 Buscar..." oninput="renderPatients()">
+            <div id="btn-add-patient"></div>
+          </div>
+        </div>
+        <div class="tabs">
+          <div class="tab on" data-tab="internados" onclick="switchPTab(this)">Internados</div>
+          <div class="tab" data-tab="alta" onclick="switchPTab(this)">Histórico / Alta</div>
+        </div>
+        <div id="patients-list"></div>
+      </div>
+
+      <!-- PLANOS ALIMENTARES -->
+      <div class="panel" id="p-planos">
+        <div class="ph"><div><h2>Planos Alimentares</h2><p>Gerenciar e aprovar planos nutricionais</p></div>
+          <div class="ph-acts"><div class="filters">
+            <select class="fc" id="plan-filter" onchange="renderPlanos()" style="width:140px">
+              <option value="">Todos status</option>
+              <option value="Rascunho">Rascunho</option>
+              <option value="Aprovado">Aprovado</option>
+            </select>
+          </div></div>
+        </div>
+        <div id="planos-list"></div>
+      </div>
+
+      <!-- COZINHA -->
+      <div class="panel" id="p-cozinha">
+        <div class="ph"><div><h2>Cozinha</h2><p>Controle de preparo e entrega de refeições</p></div>
+          <div class="ph-acts"><button class="btn btn-s btn-sm" onclick="renderCozinha()">🔄 Atualizar</button></div>
+        </div>
+        <div id="time-info" style="margin-bottom:14px"></div>
+        <div id="cozinha-list"></div>
+      </div>
+
+      <!-- ESTOQUE -->
+      <div class="panel" id="p-estoque">
+        <div class="ph"><div><h2>Estoque</h2><p>Ingredientes disponíveis no mês</p></div>
+          <div class="ph-acts"><button class="btn btn-p btn-sm" onclick="openStockModal()">+ Adicionar Ingrediente</button></div>
+        </div>
+        <div class="card">
+          <div style="background:var(--bg);border:1px solid var(--b);border-radius:var(--r8);overflow:hidden">
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 13px;border-bottom:1px solid var(--b);background:rgba(255,255,255,.02)">
+              <div style="flex:1;font-size:11px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.06em">Ingrediente</div>
+              <div style="min-width:90px;font-size:11px;font-weight:600;color:var(--t3);text-transform:uppercase">Quantidade</div>
+              <div style="min-width:95px;font-size:11px;font-weight:600;color:var(--t3);text-transform:uppercase">Validade</div>
+              <div style="min-width:80px"></div>
+            </div>
+            <div id="stock-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FEEDBACKS -->
+      <div class="panel" id="p-feedbacks">
+        <div class="ph"><div><h2>Feedbacks</h2><p>Aceitação alimentar dos pacientes</p></div>
+          <div class="ph-acts" id="btn-add-feedback"></div>
+        </div>
+        <div class="card"><div id="fb-list"></div></div>
+      </div>
+
+      <!-- USUÁRIOS -->
+      <div class="panel" id="p-usuarios">
+        <div class="ph"><div><h2>Usuários</h2><p>Gerenciar equipe e permissões</p></div>
+          <div class="ph-acts"><button class="btn btn-p btn-sm" onclick="openUserModal()">+ Novo Usuário</button></div>
+        </div>
+        <div class="card"><div class="tw"><table>
+          <thead><tr><th>Nome</th><th>Email</th><th>Perfil</th><th>Ações</th></tr></thead>
+          <tbody id="users-table"></tbody>
+        </table></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODALS ═══ -->
+
+<!-- PATIENT MODAL -->
+<div class="mo" id="m-patient">
+  <div class="mb mb-lg">
+    <div class="mh"><div class="mt" id="m-patient-title">Novo Paciente</div><div class="mc" onclick="closeModal('m-patient')">✕</div></div>
+    <div class="fr"><div class="fg"><label>Nome completo *</label><input class="fc" id="pt-name"></div><div class="fg"><label>Idade *</label><input class="fc" id="pt-age" type="number" min="0" max="150"></div></div>
+    <div class="fr"><div class="fg"><label>Quarto/Leito *</label><input class="fc" id="pt-room"></div><div class="fg"><label>Sexo</label><select class="fc" id="pt-gender"><option>Masculino</option><option>Feminino</option><option>Outro</option></select></div></div>
+    <div class="fg"><label>Condições médicas (vírgula para separar)</label><input class="fc" id="pt-conditions" placeholder="ex: Diabetes tipo 2, Hipertensão"></div>
+    <div class="fg"><label>Restrições alimentares (vírgula para separar)</label><input class="fc" id="pt-restrictions" placeholder="ex: Sem glúten, Baixo sódio"></div>
+    <div class="fg"><label>Notas médicas</label><textarea class="fc" id="pt-notes" placeholder="Observações adicionais..."></textarea></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+      <button class="btn btn-s" onclick="closeModal('m-patient')">Cancelar</button>
+      <button class="btn btn-p" onclick="savePatient()">Salvar Paciente</button>
+    </div>
+  </div>
+</div>
+
+<!-- PLAN MODAL -->
+<div class="mo" id="m-plan">
+  <div class="mb mb-lg">
+    <div class="mh">
+      <div>
+        <div class="mt" id="m-plan-title">Plano Alimentar</div>
+        <div id="m-plan-sub" style="font-size:12px;color:var(--t3);margin-top:3px"></div>
+      </div>
+      <div class="mc" onclick="closeModal('m-plan')">✕</div>
+    </div>
+    <div id="plan-ai-warning"></div>
+    <div id="plan-form-content"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px" id="plan-form-actions"></div>
+  </div>
+</div>
+
+<!-- STOCK MODAL -->
+<div class="mo" id="m-stock">
+  <div class="mb">
+    <div class="mh"><div class="mt" id="m-stock-title">Ingrediente</div><div class="mc" onclick="closeModal('m-stock')">✕</div></div>
+    <div class="fg"><label>Nome do ingrediente *</label><input class="fc" id="sk-name"></div>
+    <div class="fr"><div class="fg"><label>Quantidade *</label><input class="fc" id="sk-qty" type="number" min="0" step="0.01"></div><div class="fg"><label>Unidade *</label><select class="fc" id="sk-unit"><option>kg</option><option>g</option><option>L</option><option>ml</option><option>unidade</option></select></div></div>
+    <div class="fg"><label>Data de validade</label><input class="fc" id="sk-exp" type="date"></div>
+    <input type="hidden" id="sk-id">
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+      <button class="btn btn-s" onclick="closeModal('m-stock')">Cancelar</button>
+      <button class="btn btn-p" onclick="saveStock()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- FEEDBACK MODAL -->
+<div class="mo" id="m-feedback">
+  <div class="mb">
+    <div class="mh"><div class="mt">Registrar Feedback</div><div class="mc" onclick="closeModal('m-feedback')">✕</div></div>
+    <div class="fg"><label>Paciente</label><select class="fc" id="fb-patient"></select></div>
+    <div class="fr"><div class="fg"><label>Refeição</label><select class="fc" id="fb-meal"><option>Café da Manhã</option><option>Lanche da Manhã</option><option>Almoço</option><option>Lanche da Tarde</option><option>Jantar</option><option>Ceia</option></select></div>
+    <div class="fg"><label>Avaliação</label><select class="fc" id="fb-rating"><option value="5">⭐⭐⭐⭐⭐ Excelente</option><option value="4">⭐⭐⭐⭐ Bom</option><option value="3">⭐⭐⭐ Regular</option><option value="2">⭐⭐ Ruim</option><option value="1">⭐ Muito ruim</option></select></div></div>
+    <div class="fg"><label>Observações</label><textarea class="fc" id="fb-notes" placeholder="O paciente recusou... / Preferências..."></textarea></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+      <button class="btn btn-s" onclick="closeModal('m-feedback')">Cancelar</button>
+      <button class="btn btn-p" onclick="saveFeedback()">Salvar Feedback</button>
+    </div>
+  </div>
+</div>
+
+<!-- USER MODAL -->
+<div class="mo" id="m-user">
+  <div class="mb">
+    <div class="mh"><div class="mt" id="m-user-title">Novo Usuário</div><div class="mc" onclick="closeModal('m-user')">✕</div></div>
+    <div class="fr"><div class="fg"><label>Nome *</label><input class="fc" id="u-name"></div><div class="fg"><label>Email *</label><input class="fc" id="u-email" type="email"></div></div>
+    <div class="fr"><div class="fg"><label>Senha *</label><input class="fc" id="u-pass" type="password"></div><div class="fg"><label>Perfil *</label><select class="fc" id="u-role"><option value="medico">Médico</option><option value="nutricionista">Nutricionista</option><option value="enfermeiro">Enfermeiro</option><option value="cozinheiro">Cozinheiro</option><option value="admin">Admin</option></select></div></div>
+    <input type="hidden" id="u-id">
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+      <button class="btn btn-s" onclick="closeModal('m-user')">Cancelar</button>
+      <button class="btn btn-p" onclick="saveUser()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- PATIENT DETAIL MODAL -->
+<div class="mo" id="m-detail">
+  <div class="mb mb-lg">
+    <div class="mh"><div class="mt" id="m-detail-title">Detalhes do Paciente</div><div class="mc" onclick="closeModal('m-detail')">✕</div></div>
+    <div id="m-detail-body"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// DATABASE (localStorage)
+// ═══════════════════════════════════════════════════════
+const DB = {
+  get:(k)=>{try{return JSON.parse(localStorage.getItem('nf_'+k))}catch(e){return null}},
+  set:(k,v)=>localStorage.setItem('nf_'+k,JSON.stringify(v)),
+  list:(k)=>{try{return JSON.parse(localStorage.getItem('nf_'+k))||[]}catch(e){return[]}},
+  push:(k,item)=>{const a=DB.list(k);a.push(item);DB.set(k,a);return item},
+  update:(k,id,patch)=>{const a=DB.list(k),i=a.findIndex(x=>x.id===id);if(i>-1){a[i]={...a[i],...patch};DB.set(k,a);return a[i]}return null},
+  remove:(k,id)=>{DB.set(k,DB.list(k).filter(x=>x.id!==id))},
+  find:(k,id)=>DB.list(k).find(x=>x.id===id),
+  uid:()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6)
+};
+
+// ═══════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════
+let CU=null; // current user
+let CPanel='dashboard';
+let editPatientId=null;
+let editPlanId=null;
+let editStockId=null;
+let editUserId=null;
+let pTab='internados';
+
+// ═══════════════════════════════════════════════════════
+// SEED DATA
+// ═══════════════════════════════════════════════════════
+function seedData(){
+  if(DB.get('seeded')) return;
+  // Users
+  const users=[
+    {id:'u1',name:'Dr. Carlos Mendes',email:'medico@hospital.com',password:'123',role:'medico'},
+    {id:'u2',name:'Nutri. Beatriz Costa',email:'nutri@hospital.com',password:'123',role:'nutricionista'},
+    {id:'u3',name:'Enf. Rafael Lima',email:'enfermeiro@hospital.com',password:'123',role:'enfermeiro'},
+    {id:'u4',name:'Chef Ana Souza',email:'cozinha@hospital.com',password:'123',role:'cozinheiro'},
+    {id:'u5',name:'Admin',email:'admin@hospital.com',password:'admin',role:'admin'},
+  ];
+  DB.set('users',users);
+
+  // Patients
+  const patients=[
+    {id:'p1',name:'João Silva',age:65,room:'A-101',gender:'Masculino',conditions:['Diabetes tipo 2','Hipertensão'],restrictions:['Baixo sódio','Sem açúcar refinado'],status:'Internado',admissionDate:'2025-05-01',notes:'Paciente cooperativo'},
+    {id:'p2',name:'Maria Oliveira',age:48,room:'A-102',gender:'Feminino',conditions:['Insuficiência renal','Anemia'],restrictions:['Baixo potássio','Baixo fósforo'],status:'Internado',admissionDate:'2025-05-03',notes:'Hemodiálise 3x/semana'},
+    {id:'p3',name:'Pedro Santos',age:72,room:'B-201',gender:'Masculino',conditions:['Pós-operatório','Desnutrição'],restrictions:['Dieta pastosa'],status:'Internado',admissionDate:'2025-05-05',notes:'Dificuldade de deglutição'},
+    {id:'p4',name:'Ana Lima',age:55,room:'B-202',gender:'Feminino',conditions:['Câncer colorretal','Quimioterapia'],restrictions:['Alta caloria','Sem lactose'],status:'Internado',admissionDate:'2025-05-06',notes:'Náuseas frequentes'},
+  ];
+  DB.set('patients',patients);
+
+  // Meal plans
+  const plans=[
+    {id:'pl1',patientId:'p1',status:'Aprovado',createdAt:new Date().toISOString(),meals:{
+      breakfast:'Pão integral sem sal (2 fatias) + Queijo branco (30g) + Chá sem açúcar',
+      morningSnack:'Fruta da época (1 unidade) - evitar manga e uva',
+      lunch:'Arroz integral (4 col.) + Feijão carioca cozido (3 col.) + Peito de frango grelhado (120g) + Salada de folhas verdes',
+      afternoonSnack:'Iogurte natural sem açúcar (150ml)',
+      dinner:'Sopa de legumes sem sal (300ml) + Torrada integral (2 unid.)',
+      supper:'Leite desnatado morno (200ml)'
+    }},
+    {id:'pl2',patientId:'p2',status:'Aprovado',createdAt:new Date().toISOString(),meals:{
+      breakfast:'Pão branco (1 fatia) + Manteiga (5g) + Café com leite desnatado (150ml)',
+      morningSnack:'Maçã sem casca (1 pequena)',
+      lunch:'Arroz branco (4 col.) + Carne magra cozida (100g) + Cenoura cozida (50g) + Azeite (5ml)',
+      afternoonSnack:'Biscoito cream cracker (4 unid.)',
+      dinner:'Frango desfiado com batata (200g) + Chá sem açúcar',
+      supper:'Pão branco (1 fatia) com requeijão light'
+    }},
+    {id:'pl3',patientId:'p3',status:'Rascunho',createdAt:new Date().toISOString(),meals:{
+      breakfast:'Mingau de aveia passado (200ml)',
+      morningSnack:'',
+      lunch:'Purê de batata (150g) + Frango desfiado passado (80g) + Cenoura amassada (50g)',
+      afternoonSnack:'Vitamina de banana (200ml)',
+      dinner:'Caldo de carne peneirado (300ml)',
+      supper:''
+    }},
+    {id:'pl4',patientId:'p4',status:'Rascunho',createdAt:new Date().toISOString(),meals:{breakfast:'',morningSnack:'',lunch:'',afternoonSnack:'',dinner:'',supper:''}},
+  ];
+  DB.set('plans',plans);
+
+  // Daily meals for today
+  const today=todayStr();
+  const meals=[];
+  ['p1','p2','p3','p4'].forEach(pid=>{
+    const plan=plans.find(pl=>pl.patientId===pid&&pl.status==='Aprovado');
+    if(!plan) return;
+    const types=['Café da Manhã','Lanche da Manhã','Almoço','Lanche da Tarde','Jantar','Ceia'];
+    types.forEach((type,i)=>{
+      meals.push({id:DB.uid(),patientId:pid,date:today,type,status:'Pendente',items:Object.values(plan.meals)[i]||''});
+    });
+  });
+  DB.set('daily',meals);
+
+  // Stock
+  const stock=[
+    {id:'s1',name:'Arroz branco',quantity:50,unit:'kg',expiryDate:'2025-12-31',month:'2025-05'},
+    {id:'s2',name:'Feijão carioca',quantity:20,unit:'kg',expiryDate:'2025-12-31',month:'2025-05'},
+    {id:'s3',name:'Peito de frango',quantity:30,unit:'kg',expiryDate:'2025-05-20',month:'2025-05'},
+    {id:'s4',name:'Batata inglesa',quantity:15,unit:'kg',expiryDate:'2025-05-25',month:'2025-05'},
+    {id:'s5',name:'Leite desnatado',quantity:40,unit:'L',expiryDate:'2025-05-18',month:'2025-05'},
+    {id:'s6',name:'Pão integral',quantity:200,unit:'unidade',expiryDate:'2025-05-15',month:'2025-05'},
+    {id:'s7',name:'Cenoura',quantity:10,unit:'kg',expiryDate:'2025-05-20',month:'2025-05'},
+    {id:'s8',name:'Azeite de oliva',quantity:5,unit:'L',expiryDate:'2026-01-01',month:'2025-05'},
+  ];
+  DB.set('stock',stock);
+
+  // Feedbacks
+  DB.set('feedbacks',[
+    {id:'f1',patientId:'p1',mealType:'Almoço',date:today,rating:4,notes:'Paciente aceitou bem, solicitou mais frango',createdBy:'u3'},
+    {id:'f2',patientId:'p2',mealType:'Café da Manhã',date:today,rating:3,notes:'Recusou o pão, aceitou somente o café',createdBy:'u3'},
+  ]);
+
+  // Alerts
+  DB.set('alerts',[
+    {id:'al1',type:'warning',message:'Plano de Pedro Santos aguarda aprovação do Nutricionista',patientId:'p3',time:'Hoje 08:30',read:false},
+    {id:'al2',type:'info',message:'Novo paciente internado: Ana Lima (B-202)',patientId:'p4',time:'Hoje 09:15',read:false},
+  ]);
+
+  DB.set('seeded',true);
+}
+
+// ═══════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════
+function todayStr(){return new Date().toISOString().split('T')[0]}
+function fmtDate(d){if(!d)return'—';const p=d.split('-');return`${p[2]}/${p[1]}/${p[0]}`}
+function initials(name){return name.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase()}
+function roleLabel(r){return{medico:'Médico',nutricionista:'Nutricionista',enfermeiro:'Enfermeiro',cozinheiro:'Cozinheiro',admin:'Admin'}[r]||r}
+function roleClass(r){return{medico:'r-m',nutricionista:'r-n',enfermeiro:'r-e',cozinheiro:'r-c',admin:'r-a'}[r]||''}
+function avatarColor(r){return{medico:'#ff4d6d',nutricionista:'#00d4aa',enfermeiro:'#4f8ef7',cozinheiro:'#ffb347',admin:'#b464ff'}[r]||'#7a9bbf'}
+function bgForRole(r){return{medico:'rgba(255,77,109,.15)',nutricionista:'rgba(0,212,170,.15)',enfermeiro:'rgba(79,142,247,.15)',cozinheiro:'rgba(255,179,71,.15)',admin:'rgba(180,100,255,.15)'}[r]||'rgba(255,255,255,.08)'}
+function mealKey(type){return{
+  'Café da Manhã':'breakfast','Lanche da Manhã':'morningSnack',
+  'Almoço':'lunch','Lanche da Tarde':'afternoonSnack',
+  'Jantar':'dinner','Ceia':'supper'
+}[type]||''}
+
+// ─── Kitchen time windows ───
+const MEAL_WINDOWS={
+  'Café da Manhã':[6,9],'Lanche da Manhã':[9,10.5],
+  'Almoço':[11,13.5],'Lanche da Tarde':[14.5,16],
+  'Jantar':[18,20],'Ceia':[20.5,22]
+};
+function isInWindow(type){
+  const w=MEAL_WINDOWS[type];if(!w) return true;
+  const now=new Date();const h=now.getHours()+now.getMinutes()/60;
+  return h>=w[0]&&h<=w[1];
+}
+function windowLabel(type){
+  const w=MEAL_WINDOWS[type];if(!w) return'';
+  const fmt=(f)=>{const h=Math.floor(f);const m=Math.round((f-h)*60);return`${String(h).padStart(2,'0')}h${m?String(m).padStart(2,'0'):'00'}`};
+  return`${fmt(w[0])}–${fmt(w[1])}`;
+}
+
+// ═══════════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════════
+function toast(type,title,msg='',dur=3500){
+  const icons={ok:'✅',er:'❌',wa:'⚠️',in:'ℹ️'};
+  const tc=document.getElementById('tc');
+  const t=document.createElement('div');
+  t.className=`toast toast-${type}`;
+  t.innerHTML=`<div class="toast-ico">${icons[type]||'💬'}</div><div><div class="toast-t">${title}</div>${msg?`<div class="toast-m">${msg}</div>`:''}</div>`;
+  tc.appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';t.style.transform='translateX(100%)';t.style.transition='all .3s';setTimeout(()=>t.remove(),300)},dur);
+}
+
+// ═══════════════════════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════════════════════
+function doLogin(){
+  const email=document.getElementById('l-email').value.trim();
+  const pass=document.getElementById('l-pass').value;
+  const users=DB.list('users');
+  const user=users.find(u=>u.email===email&&u.password===pass);
+  if(!user){toast('er','Credenciais inválidas','Verifique email e senha');return}
+  CU=user;
+  DB.set('session',user.id);
+  startApp();
+}
+function doLogout(){
+  CU=null;DB.set('session',null);
+  document.getElementById('app').classList.remove('on');
+  document.getElementById('login-screen').style.display='flex';
+  toast('in','Sessão encerrada');
+}
+function initSession(){
+  const sid=DB.get('session');
+  if(sid){const u=DB.find('users',sid);if(u){CU=u;return true}}
+  return false;
+}
+
+// Role checks
+const CAN={
+  createPatient:()=>['medico','admin'].includes(CU?.role),
+  editPatient:()=>['medico','admin'].includes(CU?.role),
+  giveDischarge:()=>['medico','admin'].includes(CU?.role),
+  editPlan:()=>['nutricionista','admin'].includes(CU?.role),
+  approvePlan:()=>['nutricionista','admin'].includes(CU?.role),
+  kitchen:()=>['cozinheiro','admin'].includes(CU?.role),
+  stock:()=>['cozinheiro','admin'].includes(CU?.role),
+  addFeedback:()=>['enfermeiro','admin'].includes(CU?.role),
+  manageUsers:()=>['admin','medico'].includes(CU?.role),
+};
+
+// ═══════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════
+const NAV_ITEMS=[
+  {id:'dashboard',icon:'📊',label:'Dashboard',roles:['medico','nutricionista','enfermeiro','admin']},
+  {id:'pacientes',icon:'🏥',label:'Pacientes',roles:['medico','nutricionista','enfermeiro','admin']},
+  {id:'planos',icon:'📋',label:'Planos Alimentares',roles:['medico','nutricionista','admin']},
+  {id:'cozinha',icon:'🍽️',label:'Cozinha',roles:['cozinheiro','admin']},
+  {id:'estoque',icon:'📦',label:'Estoque',roles:['cozinheiro','admin']},
+  {id:'feedbacks',icon:'💬',label:'Feedbacks',roles:['nutricionista','enfermeiro','medico','admin']},
+  {id:'usuarios',icon:'👥',label:'Usuários',roles:['admin','medico']},
+];
+
+function buildNav(){
+  const nav=document.getElementById('s-nav');
+  nav.innerHTML='';
+  const visible=NAV_ITEMS.filter(n=>n.roles.includes(CU.role));
+  visible.forEach(item=>{
+    const d=document.createElement('div');
+    d.className='nav-i'+(CPanel===item.id?' on':'');
+    d.dataset.panel=item.id;
+    d.innerHTML=`<span class="ni">${item.icon}</span>${item.label}`;
+    d.onclick=()=>navigate(item.id);
+    nav.appendChild(d);
+  });
+}
+
+function navigate(panel){
+  CPanel=panel;
+  // topbar
+  const item=NAV_ITEMS.find(n=>n.id===panel);
+  document.getElementById('tb-title').textContent=item?item.label:'';
+  // panels
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  const el=document.getElementById('p-'+panel);
+  if(el) el.classList.add('on');
+  // nav highlight
+  document.querySelectorAll('.nav-i').forEach(n=>{n.classList.toggle('on',n.dataset.panel===panel)});
+  // render
+  const renders={dashboard:renderDashboard,pacientes:renderPatients,planos:renderPlanos,cozinha:renderCozinha,estoque:renderStock,feedbacks:renderFeedbacks,usuarios:renderUsers};
+  if(renders[panel]) renders[panel]();
+}
+
+// ═══════════════════════════════════════════════════════
+// START APP
+// ═══════════════════════════════════════════════════════
+function startApp(){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').classList.add('on');
+
+  // sidebar user info
+  const av=document.getElementById('s-av');
+  av.style.background=bgForRole(CU.role);
+  av.style.color=avatarColor(CU.role);
+  av.textContent=initials(CU.name);
+  document.getElementById('s-name').textContent=CU.name;
+  document.getElementById('s-role').textContent=roleLabel(CU.role);
+
+  buildNav();
+
+  // Navigate to first available panel
+  const first=NAV_ITEMS.find(n=>n.roles.includes(CU.role));
+  if(first) navigate(first.id);
+
+  // Auto-generate daily meals
+  generateDailyMeals();
+}
+
+// ═══════════════════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════════════════
+function renderDashboard(){
+  const patients=DB.list('patients');
+  const internados=patients.filter(p=>p.status==='Internado');
+  const daily=DB.list('daily').filter(d=>d.date===todayStr());
+  const plans=DB.list('plans');
+  const rascunhos=plans.filter(p=>p.status==='Rascunho').length;
+  const aprovados=plans.filter(p=>p.status==='Aprovado').length;
+  const entregues=daily.filter(d=>d.status==='Entregue').length;
+
+  document.getElementById('dash-stats').innerHTML=`
+    <div class="sc" data-icon="🏥"><div class="sc-lbl">Pacientes Internados</div><div class="sc-val">${internados.length}</div><div class="sc-sub">Total no hospital</div></div>
+    <div class="sc" data-icon="📋"><div class="sc-lbl">Planos Aprovados</div><div class="sc-val">${aprovados}</div><div class="sc-sub">${rascunhos} aguardando</div></div>
+    <div class="sc" data-icon="🍽️"><div class="sc-lbl">Refeições Hoje</div><div class="sc-val">${daily.length}</div><div class="sc-sub">${entregues} entregues</div></div>
+    <div class="sc" data-icon="📦"><div class="sc-lbl">Itens no Estoque</div><div class="sc-val">${DB.list('stock').length}</div><div class="sc-sub">Mês atual</div></div>
+  `;
+
+  const alerts=DB.list('alerts').slice(-5).reverse();
+  document.getElementById('dash-alerts').innerHTML=alerts.length?
+    alerts.map(a=>`<div class="alert-i"><div class="alert-dot" style="background:${a.type==='warning'?'var(--yel)':'var(--acc2)'}"></div><div><div class="alert-txt">${a.message}</div><div class="alert-time">${a.time}</div></div></div>`).join(''):
+    '<div class="emp"><div class="ei">✅</div><p>Sem alertas no momento</p></div>';
+
+  document.getElementById('dash-patients').innerHTML=internados.length?
+    internados.map(p=>`<div class="alert-i"><div class="alert-dot" style="background:var(--acc)"></div><div><div class="alert-txt">${p.name} — Quarto ${p.room}</div><div class="alert-time">${p.conditions.join(', ')||'Sem condições registradas'}</div></div></div>`).join(''):
+    '<div class="emp"><div class="ei">🏥</div><p>Nenhum paciente internado</p></div>';
+}
+
+// ═══════════════════════════════════════════════════════
+// PATIENTS
+// ═══════════════════════════════════════════════════════
+function renderPatients(){
+  // Add patient button
+  document.getElementById('btn-add-patient').innerHTML=CAN.createPatient()?
+    `<button class="btn btn-p btn-sm" onclick="openPatientModal()">+ Novo Paciente</button>`:'';
+
+  const search=(document.getElementById('pt-search')?.value||'').toLowerCase();
+  const patients=DB.list('patients').filter(p=>{
+    const match=p.name.toLowerCase().includes(search)||p.room.toLowerCase().includes(search);
+    if(pTab==='internados') return p.status==='Internado'&&match;
+    return p.status==='Alta'&&match;
+  });
+
+  const list=document.getElementById('patients-list');
+  if(!patients.length){
+    list.innerHTML=`<div class="emp"><div class="ei">🏥</div><h3>Nenhum paciente ${pTab==='internados'?'internado':'com alta'}</h3><p>Nenhum registro encontrado.</p></div>`;
+    return;
+  }
+  list.innerHTML=patients.map(p=>{
+    const plan=DB.list('plans').find(pl=>pl.patientId===p.id);
+    const pStatus=plan?.status||'—';
+    const acts=[];
+    acts.push(`<button class="btn btn-b btn-sm" onclick="openPatientDetail('${p.id}')">Ver</button>`);
+    if(CAN.editPatient()&&p.status==='Internado') acts.push(`<button class="btn btn-s btn-sm" onclick="openPatientModal('${p.id}')">Editar</button>`);
+    if(CAN.giveDischarge()&&p.status==='Internado') acts.push(`<button class="btn btn-w btn-sm" onclick="giveDischarge('${p.id}')">Alta</button>`);
+    if(CAN.editPlan()&&p.status==='Internado') acts.push(`<button class="btn btn-p btn-sm" onclick="openPlanModal('${p.id}')">📋 Plano</button>`);
+    return`<div class="pc">
+      <div class="pav" style="background:var(--acc-d);color:var(--acc)">${initials(p.name)}</div>
+      <div class="pi">
+        <div class="pn">${p.name}</div>
+        <div class="pm">Quarto ${p.room} · ${p.age} anos · ${p.gender||'—'}</div>
+        <div class="pm" style="margin-top:4px">${p.conditions.slice(0,3).map(c=>`<span class="bg bg-n" style="margin-right:4px;font-size:10px">${c}</span>`).join('')}</div>
+      </div>
+      <div style="margin-right:12px;text-align:right">
+        <span class="bg ${pStatus==='Aprovado'?'bg-g':pStatus==='Rascunho'?'bg-y':'bg-n'}">${pStatus}</span>
+        <div style="font-size:11px;color:var(--t3);margin-top:4px">${p.status==='Alta'?'Alta médica':'Internado'}</div>
+      </div>
+      <div class="pa">${acts.join('')}</div>
+    </div>`;
+  }).join('');
+}
+
+function switchPTab(el){
+  document.querySelectorAll('#p-pacientes .tab').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+  pTab=el.dataset.tab;
+  renderPatients();
+}
+
+function openPatientModal(id=null){
+  editPatientId=id;
+  document.getElementById('m-patient-title').textContent=id?'Editar Paciente':'Novo Paciente';
+  if(id){
+    const p=DB.find('patients',id);
+    document.getElementById('pt-name').value=p.name;
+    document.getElementById('pt-age').value=p.age;
+    document.getElementById('pt-room').value=p.room;
+    document.getElementById('pt-gender').value=p.gender||'Masculino';
+    document.getElementById('pt-conditions').value=p.conditions.join(', ');
+    document.getElementById('pt-restrictions').value=p.restrictions.join(', ');
+    document.getElementById('pt-notes').value=p.notes||'';
+  } else {
+    ['pt-name','pt-age','pt-room','pt-conditions','pt-restrictions','pt-notes'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('pt-gender').value='Masculino';
+  }
+  openModal('m-patient');
+}
+
+function savePatient(){
+  const name=document.getElementById('pt-name').value.trim();
+  const age=+document.getElementById('pt-age').value;
+  const room=document.getElementById('pt-room').value.trim();
+  if(!name||!age||!room){toast('er','Campos obrigatórios','Preencha nome, idade e quarto');return}
+  const data={
+    name,age,room,gender:document.getElementById('pt-gender').value,
+    conditions:document.getElementById('pt-conditions').value.split(',').map(s=>s.trim()).filter(Boolean),
+    restrictions:document.getElementById('pt-restrictions').value.split(',').map(s=>s.trim()).filter(Boolean),
+    notes:document.getElementById('pt-notes').value.trim(),
+    status:'Internado'
+  };
+  if(editPatientId){
+    DB.update('patients',editPatientId,data);
+    toast('ok','Paciente atualizado');
+  } else {
+    const id=DB.uid();
+    DB.push('patients',{id,...data,admissionDate:todayStr()});
+    // Create rascunho plan
+    DB.push('plans',{id:DB.uid(),patientId:id,status:'Rascunho',createdAt:new Date().toISOString(),meals:{breakfast:'',morningSnack:'',lunch:'',afternoonSnack:'',dinner:'',supper:''}});
+    // Alert
+    DB.push('alerts',{id:DB.uid(),type:'info',message:`Novo paciente internado: ${name} (${room})`,patientId:id,time:'Agora',read:false});
+    toast('ok','Paciente cadastrado','Plano rascunho criado automaticamente');
+  }
+  closeModal('m-patient');
+  renderPatients();
+}
+
+function giveDischarge(id){
+  if(!confirm('Confirmar alta médica deste paciente?')) return;
+  const p=DB.find('patients',id);
+  DB.update('patients',id,{status:'Alta'});
+  // Stop plan loop
+  const plan=DB.list('plans').find(pl=>pl.patientId===id);
+  if(plan&&plan.status==='Aprovado') DB.update('plans',plan.id,{status:'Rascunho'});
+  DB.push('alerts',{id:DB.uid(),type:'info',message:`Alta médica: ${p.name} (${p.room})`,patientId:id,time:'Agora',read:false});
+  toast('ok','Alta concedida',`${p.name} recebeu alta`);
+  renderPatients();
+}
+
+function openPatientDetail(id){
+  const p=DB.find('patients',id);
+  const plan=DB.list('plans').find(pl=>pl.patientId===id);
+  const body=document.getElementById('m-detail-body');
+  document.getElementById('m-detail-title').textContent=p.name;
+  body.innerHTML=`
+    <div class="g2" style="margin-bottom:14px">
+      <div><div style="font-size:11px;color:var(--t3);margin-bottom:4px">INFORMAÇÕES</div>
+        <div style="font-size:13px;color:var(--t2);line-height:2">
+          <div>Quarto: <strong style="color:var(--t1)">${p.room}</strong></div>
+          <div>Idade: <strong style="color:var(--t1)">${p.age} anos</strong></div>
+          <div>Sexo: <strong style="color:var(--t1)">${p.gender||'—'}</strong></div>
+          <div>Internação: <strong style="color:var(--t1)">${fmtDate(p.admissionDate)}</strong></div>
+          <div>Status: <span class="bg ${p.status==='Internado'?'bg-g':'bg-y'}">${p.status}</span></div>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--t3);margin-bottom:4px">CONDIÇÕES</div>
+        <div style="margin-bottom:10px">${p.conditions.map(c=>`<span class="bg bg-r" style="margin:2px">${c}</span>`).join('')||'<span style="color:var(--t3)">Nenhuma</span>'}</div>
+        <div style="font-size:11px;color:var(--t3);margin-bottom:4px;margin-top:8px">RESTRIÇÕES</div>
+        <div>${p.restrictions.map(r=>`<span class="bg bg-y" style="margin:2px">${r}</span>`).join('')||'<span style="color:var(--t3)">Nenhuma</span>'}</div>
+      </div>
+    </div>
+    ${p.notes?`<div class="fg"><div style="font-size:11px;color:var(--t3);margin-bottom:6px">NOTAS MÉDICAS</div><div style="background:var(--bg);border:1px solid var(--b);border-radius:var(--r8);padding:12px;font-size:13px;color:var(--t2)">${p.notes}</div></div>`:''}
+    ${plan?`<div style="margin-top:14px"><div style="font-size:11px;color:var(--t3);margin-bottom:6px">PLANO ALIMENTAR — <span class="bg ${plan.status==='Aprovado'?'bg-g':'bg-y'}">${plan.status}</span></div>
+    <div class="mp-grid">
+      ${[['Café da Manhã','breakfast'],['Lanche da Manhã','morningSnack'],['Almoço','lunch'],['Lanche da Tarde','afternoonSnack'],['Jantar','dinner'],['Ceia','supper']].map(([l,k])=>`
+        <div class="mp-i"><div class="mp-lbl">${l}</div><div class="mp-txt">${plan.meals[k]||'<span style="color:var(--t3)">Não definido</span>'}</div></div>
+      `).join('')}
+    </div></div>`:''}
+  `;
+  openModal('m-detail');
+}
+
+// ═══════════════════════════════════════════════════════
+// MEAL PLANS
+// ═══════════════════════════════════════════════════════
+function renderPlanos(){
+  const filter=document.getElementById('plan-filter')?.value||'';
+  const patients=DB.list('patients').filter(p=>p.status==='Internado');
+  const plans=DB.list('plans');
+  const list=document.getElementById('planos-list');
+
+  const filtered=patients.filter(p=>{
+    const plan=plans.find(pl=>pl.patientId===p.id);
+    if(filter&&plan?.status!==filter) return false;
+    return true;
+  });
+
+  if(!filtered.length){
+    list.innerHTML='<div class="emp"><div class="ei">📋</div><h3>Nenhum plano encontrado</h3></div>';return;
+  }
+
+  list.innerHTML=filtered.map(p=>{
+    const plan=plans.find(pl=>pl.patientId===p.id);
+    if(!plan) return '';
+    const mealCoverage=Object.values(plan.meals).filter(Boolean).length;
+    const acts=[];
+    if(CAN.editPlan()) acts.push(`<button class="btn btn-s btn-sm" onclick="openPlanModal('${p.id}')">✏️ Editar</button>`);
+    if(CAN.approvePlan()&&plan.status==='Rascunho') acts.push(`<button class="btn btn-p btn-sm" onclick="approvePlan('${plan.id}')">✅ Aprovar</button>`);
+    if(CAN.approvePlan()&&plan.status==='Aprovado') acts.push(`<button class="btn btn-w btn-sm" onclick="draftPlan('${plan.id}')">🔄 Rascunho</button>`);
+    return`<div class="card">
+      <div class="ch">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div class="pav" style="background:var(--acc-d);color:var(--acc);width:38px;height:38px;font-size:14px">${initials(p.name)}</div>
+          <div>
+            <div style="font-weight:600;font-size:14px">${p.name}</div>
+            <div style="font-size:11px;color:var(--t3);margin-top:2px">Quarto ${p.room} · ${mealCoverage}/6 refeições definidas</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="bg ${plan.status==='Aprovado'?'bg-g':'bg-y'}">${plan.status}</span>
+          ${acts.join('')}
+        </div>
+      </div>
+      <div class="mp-grid">
+        ${[['Café da Manhã','breakfast'],['Lanche da Manhã','morningSnack'],['Almoço','lunch'],['Lanche da Tarde','afternoonSnack'],['Jantar','dinner'],['Ceia','supper']].map(([l,k])=>`
+          <div class="mp-i"><div class="mp-lbl">${l}</div><div class="mp-txt">${plan.meals[k]||'<span style="color:var(--t3);font-style:italic">Não definido</span>'}</div></div>
+        `).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openPlanModal(patientId){
+  const p=DB.find('patients',patientId);
+  const plan=DB.list('plans').find(pl=>pl.patientId===patientId);
+  if(!plan) return;
+  editPlanId=plan.id;
+  document.getElementById('m-plan-title').textContent=`Plano: ${p.name}`;
+  document.getElementById('m-plan-sub').textContent=`Quarto ${p.room} · ${p.conditions.join(', ')||'Sem condições'} · Restrições: ${p.restrictions.join(', ')||'Nenhuma'}`;
+
+  // Check stock warnings
+  const stock=DB.list('stock').map(s=>s.name.toLowerCase());
+  document.getElementById('plan-ai-warning').innerHTML='';
+
+  const mealTypes=[['Café da Manhã','breakfast'],['Lanche da Manhã','morningSnack'],['Almoço','lunch'],['Lanche da Tarde','afternoonSnack'],['Jantar','dinner'],['Ceia','supper']];
+
+  document.getElementById('plan-form-content').innerHTML=`
+    ${mealTypes.map(([l,k])=>`<div class="fg"><label>${l}</label><textarea class="fc" id="pl-${k}" style="min-height:60px">${plan.meals[k]||''}</textarea></div>`).join('')}
+  `;
+
+  const canEdit=CAN.editPlan();
+  const acts=document.getElementById('plan-form-actions');
+  acts.innerHTML=`
+    <button class="btn btn-s" onclick="closeModal('m-plan')">Fechar</button>
+    ${canEdit?`<button class="btn btn-b" onclick="generateAIPlan('${patientId}')">🤖 Gerar com IA</button>`:''}
+    ${canEdit?`<button class="btn btn-p" onclick="savePlan()">💾 Salvar</button>`:''}
+  `;
+
+  if(!canEdit){
+    document.querySelectorAll('#plan-form-content textarea').forEach(t=>t.disabled=true);
+  }
+
+  openModal('m-plan');
+}
+
+async function generateAIPlan(patientId){
+  const p=DB.find('patients',patientId);
+  const stock=DB.list('stock').map(s=>`${s.name} (${s.quantity}${s.unit})`).join(', ');
+  const btn=document.querySelector('#plan-form-actions .btn-b');
+  if(btn){btn.disabled=true;btn.innerHTML='<div class="ld"><span></span><span></span><span></span></div> Gerando...';}
+
+  try{
+    const prompt=`Você é um nutricionista clínico especializado em nutrição hospitalar. Gere um plano alimentar diário personalizado para o seguinte paciente:
+
+Paciente: ${p.name}, ${p.age} anos, ${p.gender}
+Condições médicas: ${p.conditions.join(', ')||'Nenhuma'}
+Restrições alimentares: ${p.restrictions.join(', ')||'Nenhuma'}
+Notas: ${p.notes||'Nenhuma'}
+Estoque disponível: ${stock||'Não informado'}
+
+Responda SOMENTE em JSON, sem markdown, sem texto extra. Formato exato:
+{"breakfast":"...","morningSnack":"...","lunch":"...","afternoonSnack":"...","dinner":"...","supper":"..."}
+
+Cada valor deve ser uma descrição clara da refeição com quantidades (ex: "Pão integral (2 fatias) + Queijo branco (30g) + Chá verde sem açúcar"). Respeite rigorosamente as restrições. Seja específico e prático.`;
+
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})
+    });
+    const data=await resp.json();
+    const txt=data.content?.map(c=>c.text||'').join('').trim();
+    const meals=JSON.parse(txt.replace(/```json|```/g,'').trim());
+    const mkeys=['breakfast','morningSnack','lunch','afternoonSnack','dinner','supper'];
+    mkeys.forEach(k=>{const el=document.getElementById('pl-'+k);if(el&&meals[k]) el.value=meals[k];});
+    toast('ok','IA gerou o plano','Revise e salve o plano alimentar');
+  }catch(e){
+    console.error(e);
+    toast('er','Erro na geração','Verifique a conexão ou tente novamente');
+  }finally{
+    if(btn){btn.disabled=false;btn.innerHTML='🤖 Gerar com IA';}
+  }
+}
+
+function savePlan(){
+  const plan=DB.find('plans',editPlanId);
+  if(!plan) return;
+
+  // Check stock
+  const stock=DB.list('stock').map(s=>s.name.toLowerCase());
+  const allMealText=['breakfast','morningSnack','lunch','afternoonSnack','dinner','supper']
+    .map(k=>document.getElementById('pl-'+k)?.value||'').join(' ').toLowerCase();
+
+  const warnings=[];
+  // Simple ingredient check
+  const commonIngredients=['arroz','feijão','frango','batata','leite','pão','cenoura','azeite','carne'];
+  commonIngredients.forEach(ing=>{
+    if(allMealText.includes(ing)&&!stock.some(s=>s.includes(ing))){
+      warnings.push(ing);
+    }
+  });
+
+  const meals={};
+  ['breakfast','morningSnack','lunch','afternoonSnack','dinner','supper'].forEach(k=>{
+    meals[k]=document.getElementById('pl-'+k)?.value.trim()||'';
+  });
+
+  DB.update('plans',editPlanId,{meals,updatedAt:new Date().toISOString()});
+
+  if(warnings.length){
+    document.getElementById('plan-ai-warning').innerHTML=`<div class="ab">⚠️ Ingredientes não encontrados no estoque: ${warnings.join(', ')}</div>`;
+    toast('wa','Plano salvo com alertas',`Verifique estoque: ${warnings.join(', ')}`);
+  } else {
+    toast('ok','Plano salvo com sucesso');
+    closeModal('m-plan');
+  }
+  renderPlanos();
+}
+
+function approvePlan(planId){
+  const plan=DB.find('plans',planId);
+  const p=DB.find('patients',plan.patientId);
+  const meals=plan.meals;
+  const hasMeals=Object.values(meals).some(Boolean);
+  if(!hasMeals){toast('er','Plano vazio','Defina ao menos uma refeição antes de aprovar');return}
+  DB.update('plans',planId,{status:'Aprovado',approvedAt:new Date().toISOString()});
+  generateDailyMeals();
+  DB.push('alerts',{id:DB.uid(),type:'info',message:`Plano aprovado: ${p.name}`,patientId:p.id,time:'Agora',read:false});
+  toast('ok','Plano aprovado!',`Refeições geradas para ${p.name}`);
+  renderPlanos();
+}
+
+function draftPlan(planId){
+  DB.update('plans',planId,{status:'Rascunho'});
+  toast('wa','Plano em rascunho','Edite e aprove novamente');
+  renderPlanos();
+}
+
+// ═══════════════════════════════════════════════════════
+// DAILY MEALS (loop)
+// ═══════════════════════════════════════════════════════
+function generateDailyMeals(){
+  const today=todayStr();
+  const patients=DB.list('patients').filter(p=>p.status==='Internado');
+  const plans=DB.list('plans');
+  const existing=DB.list('daily');
+  const mTypes=['Café da Manhã','Lanche da Manhã','Almoço','Lanche da Tarde','Jantar','Ceia'];
+  const mKeys=['breakfast','morningSnack','lunch','afternoonSnack','dinner','supper'];
+
+  patients.forEach(p=>{
+    const plan=plans.find(pl=>pl.patientId===p.id&&pl.status==='Aprovado');
+    if(!plan) return;
+    mTypes.forEach((type,i)=>{
+      const exists=existing.find(d=>d.patientId===p.id&&d.date===today&&d.type===type);
+      if(!exists){
+        DB.push('daily',{id:DB.uid(),patientId:p.id,date:today,type,status:'Pendente',items:plan.meals[mKeys[i]]||''});
+      }
+    });
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// KITCHEN
+// ═══════════════════════════════════════════════════════
+function renderCozinha(){
+  const now=new Date();
+  document.getElementById('time-info').innerHTML=`
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <div style="background:var(--acc-d);border:1px solid rgba(0,212,170,.2);border-radius:var(--r8);padding:8px 14px;font-size:12px;color:var(--acc)">
+        🕐 ${now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})} · ${now.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long'})}
+      </div>
+      ${Object.entries(MEAL_WINDOWS).map(([t,w])=>{
+        const active=isInWindow(t);
+        return`<div class="bg ${active?'bg-g':'bg-n'}" style="font-size:10px">${active?'🟢':'⚪'} ${t} (${windowLabel(t)})</div>`;
+      }).join('')}
+    </div>`;
+
+  const today=todayStr();
+  const patients=DB.list('patients').filter(p=>p.status==='Internado');
+  const daily=DB.list('daily').filter(d=>d.date===today);
+  const list=document.getElementById('cozinha-list');
+
+  if(!patients.length){
+    list.innerHTML='<div class="emp"><div class="ei">🍽️</div><h3>Nenhum paciente internado</h3></div>';return;
+  }
+
+  let html='';
+  patients.forEach(p=>{
+    const pMeals=daily.filter(d=>d.patientId===p.id);
+    if(!pMeals.length){
+      html+=`<div class="kp"><div class="kph"><div><div class="kp-name">${p.name}</div><div class="kp-room">Quarto ${p.room}</div></div><span class="bg bg-n">Sem plano aprovado</span></div></div>`;
+      return;
+    }
+    const visibleMeals=pMeals.filter(m=>{
+      // Show if delivered or in current/past window
+      if(m.status==='Entregue') return true;
+      const w=MEAL_WINDOWS[m.type];if(!w) return true;
+      const now2=new Date();const h=now2.getHours()+now2.getMinutes()/60;
+      return h>=w[0]-2; // show 2h before window for preparation
+    });
+    if(!visibleMeals.length) return;
+
+    html+=`<div class="kp"><div class="kph">
+      <div><div class="kp-name">${p.name}</div><div class="kp-room">Quarto ${p.room}</div></div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <span class="bg bg-n" style="font-size:10px">${pMeals.filter(m=>m.status==='Entregue').length}/${pMeals.length} entregues</span>
+      </div>
+    </div>
+    <div class="chips">
+      ${visibleMeals.map(m=>{
+        const chipClass=m.status==='Em Preparo'?'prep':m.status==='Pronta'?'pronto':m.status==='Entregue'?'entregue':'';
+        const inWin=isInWindow(m.type);
+        return`<div class="chip ${chipClass}" onclick="cycleMealStatus('${m.id}','${p.id}')" title="${m.items||'Sem itens definidos'}">
+          <span class="cn">${m.type}</span>
+          <span class="cs">${m.status}${!inWin&&m.status==='Pendente'?' ⏰':''}</span>
+        </div>`;
+      }).join('')}
+    </div>
+    </div>`;
+  });
+
+  list.innerHTML=html||'<div class="emp"><div class="ei">🍽️</div><h3>Nenhuma refeição no momento</h3></div>';
+}
+
+function cycleMealStatus(mealId,patientId){
+  const meal=DB.find('daily',mealId);
+  if(!meal) return;
+  const cycle={Pendente:'Em Preparo','Em Preparo':'Pronta',Pronta:'Entregue',Entregue:'Pendente'};
+  const next=cycle[meal.status]||'Pendente';
+  DB.update('daily',mealId,{status:next});
+  if(next==='Entregue'){
+    const p=DB.find('patients',patientId);
+    toast('ok','Refeição entregue',`${meal.type} — ${p.name}`);
+    DB.push('alerts',{id:DB.uid(),type:'info',message:`Entregue: ${meal.type} para ${p.name}`,patientId:patientId,time:'Agora',read:false});
+  }
+  renderCozinha();
+}
+
+// ═══════════════════════════════════════════════════════
+// STOCK
+// ═══════════════════════════════════════════════════════
+function renderStock(){
+  const stock=DB.list('stock');
+  const list=document.getElementById('stock-list');
+  if(!stock.length){
+    list.innerHTML='<div class="emp"><div class="ei">📦</div><h3>Estoque vazio</h3><p>Adicione ingredientes ao estoque do mês.</p></div>';return;
+  }
+  const today=new Date();
+  list.innerHTML=stock.map(s=>{
+    const exp=s.expiryDate?new Date(s.expiryDate):null;
+    const expiring=exp&&(exp-today)<(7*24*60*60*1000);
+    const expired=exp&&exp<today;
+    return`<div class="si">
+      <div class="si-name">${s.name}</div>
+      <div class="si-qty"><span class="bg ${expired?'bg-r':expiring?'bg-y':'bg-g'}">${s.quantity} ${s.unit}</span></div>
+      <div class="si-exp" style="color:${expired?'var(--red)':expiring?'var(--yel)':'var(--t3)'}">${s.expiryDate?fmtDate(s.expiryDate):'—'}</div>
+      <div class="si-acts">
+        <button class="btn btn-b btn-sm" onclick="openStockModal('${s.id}')">✏️</button>
+        <button class="btn btn-d btn-sm" onclick="removeStock('${s.id}')">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openStockModal(id=null){
+  editStockId=id;
+  document.getElementById('m-stock-title').textContent=id?'Editar Ingrediente':'Novo Ingrediente';
+  if(id){
+    const s=DB.find('stock',id);
+    document.getElementById('sk-name').value=s.name;
+    document.getElementById('sk-qty').value=s.quantity;
+    document.getElementById('sk-unit').value=s.unit;
+    document.getElementById('sk-exp').value=s.expiryDate||'';
+  } else {
+    document.getElementById('sk-name').value='';
+    document.getElementById('sk-qty').value='';
+    document.getElementById('sk-unit').value='kg';
+    document.getElementById('sk-exp').value='';
+  }
+  openModal('m-stock');
+}
+
+function saveStock(){
+  const name=document.getElementById('sk-name').value.trim();
+  const qty=+document.getElementById('sk-qty').value;
+  if(!name||!qty){toast('er','Campos obrigatórios','Preencha nome e quantidade');return}
+  const data={name,quantity:qty,unit:document.getElementById('sk-unit').value,expiryDate:document.getElementById('sk-exp').value,month:todayStr().slice(0,7)};
+  if(editStockId) DB.update('stock',editStockId,data);
+  else DB.push('stock',{id:DB.uid(),...data});
+  toast('ok','Estoque atualizado');
+  closeModal('m-stock');
+  renderStock();
+}
+
+function removeStock(id){
+  const s=DB.find('stock',id);
+  if(!confirm(`Remover "${s.name}" do estoque?`)) return;
+  DB.remove('stock',id);
+  toast('ok','Ingrediente removido');
+  renderStock();
+}
+
+// ═══════════════════════════════════════════════════════
+// FEEDBACKS
+// ═══════════════════════════════════════════════════════
+function renderFeedbacks(){
+  document.getElementById('btn-add-feedback').innerHTML=CAN.addFeedback()?
+    `<button class="btn btn-p btn-sm" onclick="openFeedbackModal()">+ Registrar Feedback</button>`:'';
+
+  const fbs=DB.list('feedbacks').slice().reverse();
+  const patients=DB.list('patients');
+  const list=document.getElementById('fb-list');
+
+  if(!fbs.length){
+    list.innerHTML='<div class="emp"><div class="ei">💬</div><h3>Nenhum feedback registrado</h3><p>Feedbacks dos pacientes aparecerão aqui.</p></div>';return;
+  }
+
+  list.innerHTML=fbs.map(f=>{
+    const p=patients.find(pt=>pt.id===f.patientId);
+    const stars='⭐'.repeat(+f.rating)+'☆'.repeat(5-+f.rating);
+    return`<div class="fb-item">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <div style="font-weight:600;font-size:13px">${p?.name||'—'} <span style="font-size:11px;color:var(--t3);font-weight:400">· ${f.mealType} · ${fmtDate(f.date)}</span></div>
+        <div class="stars" style="font-size:14px">${stars}</div>
+      </div>
+      ${f.notes?`<div style="font-size:13px;color:var(--t2)">${f.notes}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function openFeedbackModal(){
+  const patients=DB.list('patients').filter(p=>p.status==='Internado');
+  const sel=document.getElementById('fb-patient');
+  sel.innerHTML=patients.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+  document.getElementById('fb-notes').value='';
+  openModal('m-feedback');
+}
+
+function saveFeedback(){
+  const patientId=document.getElementById('fb-patient').value;
+  if(!patientId){toast('er','Selecione um paciente');return}
+  DB.push('feedbacks',{
+    id:DB.uid(),patientId,
+    mealType:document.getElementById('fb-meal').value,
+    date:todayStr(),
+    rating:+document.getElementById('fb-rating').value,
+    notes:document.getElementById('fb-notes').value.trim(),
+    createdBy:CU.id
+  });
+  toast('ok','Feedback registrado');
+  closeModal('m-feedback');
+  renderFeedbacks();
+}
+
+// ═══════════════════════════════════════════════════════
+// USERS
+// ═══════════════════════════════════════════════════════
+function renderUsers(){
+  const users=DB.list('users');
+  document.getElementById('users-table').innerHTML=users.map(u=>
+    `<tr>
+      <td><div style="font-weight:500;color:var(--t1)">${u.name}</div></td>
+      <td>${u.email}</td>
+      <td><span class="bg ${u.role==='medico'?'bg-r':u.role==='nutricionista'?'bg-g':u.role==='enfermeiro'?'bg-b':u.role==='cozinheiro'?'bg-y':'bg-p'}">${roleLabel(u.role)}</span></td>
+      <td>
+        <div style="display:flex;gap:5px">
+          <button class="btn btn-b btn-sm" onclick="openUserModal('${u.id}')">✏️ Editar</button>
+          ${u.id!==CU.id?`<button class="btn btn-d btn-sm" onclick="removeUser('${u.id}')">🗑️</button>`:''}
+        </div>
+      </td>
+    </tr>`
+  ).join('');
+}
+
+function openUserModal(id=null){
+  editUserId=id;
+  document.getElementById('m-user-title').textContent=id?'Editar Usuário':'Novo Usuário';
+  if(id){
+    const u=DB.find('users',id);
+    document.getElementById('u-name').value=u.name;
+    document.getElementById('u-email').value=u.email;
+    document.getElementById('u-pass').value='';
+    document.getElementById('u-role').value=u.role;
+  } else {
+    ['u-name','u-email','u-pass'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('u-role').value='enfermeiro';
+  }
+  openModal('m-user');
+}
+
+function saveUser(){
+  const name=document.getElementById('u-name').value.trim();
+  const email=document.getElementById('u-email').value.trim();
+  const pass=document.getElementById('u-pass').value;
+  const role=document.getElementById('u-role').value;
+  if(!name||!email){toast('er','Campos obrigatórios');return}
+  if(editUserId){
+    const patch={name,email,role};if(pass) patch.password=pass;
+    DB.update('users',editUserId,patch);
+    toast('ok','Usuário atualizado');
+  } else {
+    if(!pass){toast('er','Informe a senha');return}
+    const existing=DB.list('users').find(u=>u.email===email);
+    if(existing){toast('er','Email já cadastrado');return}
+    DB.push('users',{id:DB.uid(),name,email,password:pass,role});
+    toast('ok','Usuário criado');
+  }
+  closeModal('m-user');
+  renderUsers();
+}
+
+function removeUser(id){
+  const u=DB.find('users',id);
+  if(!confirm(`Remover usuário "${u.name}"?`)) return;
+  DB.remove('users',id);
+  toast('ok','Usuário removido');
+  renderUsers();
+}
+
+// ═══════════════════════════════════════════════════════
+// MODAL HELPERS
+// ═══════════════════════════════════════════════════════
+function openModal(id){document.getElementById(id).classList.add('on')}
+function closeModal(id){document.getElementById(id).classList.remove('on')}
+// Close on overlay click
+document.querySelectorAll('.mo').forEach(m=>{
+  m.addEventListener('click',e=>{if(e.target===m) m.classList.remove('on')});
+});
+
+// ═══════════════════════════════════════════════════════
+// DEMO LOGIN LINKS
+// ═══════════════════════════════════════════════════════
+function buildDemoLinks(){
+  const demos=[
+    {role:'medico',email:'medico@hospital.com',pass:'123',label:'Médico',color:'#ff4d6d'},
+    {role:'nutricionista',email:'nutri@hospital.com',pass:'123',label:'Nutricionista',color:'#00d4aa'},
+    {role:'enfermeiro',email:'enfermeiro@hospital.com',pass:'123',label:'Enfermeiro',color:'#4f8ef7'},
+    {role:'cozinheiro',email:'cozinha@hospital.com',pass:'123',label:'Cozinheiro',color:'#ffb347'},
+    {role:'admin',email:'admin@hospital.com',pass:'admin',label:'Admin',color:'#b464ff'},
+  ];
+  const container=document.getElementById('demo-links');
+  demos.forEach(d=>{
+    const el=document.createElement('div');
+    el.className='demo-link';
+    el.innerHTML=`<span>${d.label}</span><span class="role-pill" style="background:${d.color}22;color:${d.color}">${d.email}</span>`;
+    el.onclick=()=>{
+      document.getElementById('l-email').value=d.email;
+      document.getElementById('l-pass').value=d.pass;
+      doLogin();
+    };
+    container.appendChild(el);
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+seedData();
+buildDemoLinks();
+if(initSession()){
+  document.getElementById('login-screen').style.display='none';
+  startApp();
+}
+
+// Auto-refresh kitchen every 60s
+setInterval(()=>{if(CPanel==='cozinha') renderCozinha();},60000);
+</script>
+</body>
+</html>
