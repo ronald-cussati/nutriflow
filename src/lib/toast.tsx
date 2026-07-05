@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { AlertTriangle, CheckCircle2, Info, XCircle } from 'lucide-react'
 
 export type ToastKind = 'ok' | 'er' | 'wa' | 'in'
 
@@ -12,7 +13,12 @@ export function toast(kind: ToastKind, title: string, msg?: string) {
   listeners.forEach((l) => l(entry))
 }
 
-const ICONS: Record<ToastKind, string> = { ok: '✅', er: '❌', wa: '⚠️', in: 'ℹ️' }
+const ICONS: Record<ToastKind, React.ReactNode> = {
+  ok: <CheckCircle2 size={18} />,
+  er: <XCircle size={18} />,
+  wa: <AlertTriangle size={18} />,
+  in: <Info size={18} />,
+}
 
 export function ToastHost() {
   const [toasts, setToasts] = useState<ToastEntry[]>([])

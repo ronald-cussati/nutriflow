@@ -7,6 +7,11 @@ type GenerateMealPlanInput = {
   gender: string | null
   conditions: string[]
   restrictions: string[]
+  medications: string[]
+  drug_allergies: string[]
+  food_allergies: string[]
+  diet_type: string
+  nutritional_risk: string
   notes: string | null
   stock: string
 }
@@ -24,8 +29,15 @@ export const generateMealPlan = createServerFn({ method: 'POST' })
 Paciente: ${data.name}, ${data.age} anos, ${data.gender ?? 'não informado'}
 Condições médicas: ${data.conditions.join(', ') || 'Nenhuma'}
 Restrições alimentares: ${data.restrictions.join(', ') || 'Nenhuma'}
+Tipo de dieta prescrita: ${data.diet_type || 'Livre'}
+Risco nutricional: ${data.nutritional_risk || 'Baixo'}
+Medicamentos em uso: ${data.medications.join(', ') || 'Nenhum'}
+Alergias a medicamentos: ${data.drug_allergies.join(', ') || 'Nenhuma'}
+Alergias/intolerâncias alimentares: ${data.food_allergies.join(', ') || 'Nenhuma'}
 Notas: ${data.notes || 'Nenhuma'}
 Estoque disponível: ${data.stock || 'Não informado'}
+
+ATENÇÃO: jamais inclua alimentos aos quais o paciente tem alergia/intolerância. Respeite o tipo de dieta e as restrições rigorosamente.
 
 Responda SOMENTE em JSON, sem markdown, sem texto extra. Formato exato:
 {"breakfast":"...","morningSnack":"...","lunch":"...","afternoonSnack":"...","dinner":"...","supper":"..."}

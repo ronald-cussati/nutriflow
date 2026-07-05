@@ -1,176 +1,184 @@
-import { supabase } from './supabaseClient'
+import { commit, db, delay, newId } from './store'
 import {
   MEAL_KEYS,
   MEAL_TYPES,
   EMPTY_MEALS,
   type DailyMeal,
-  type Feedback,
   type MealPlan,
+  type MealStatus,
   type Patient,
   type Profile,
+  type Role,
   type StockItem,
-  type Alert,
 } from './types'
 
 export function todayStr() {
   return new Date().toISOString().slice(0, 10)
 }
 
+type NewPatientInput = Omit<Patient, 'id' | 'user_id' | 'status' | 'admission_date'>
+
 // ── Patients ──
 export async function listPatients() {
-  const { data, error } = await supabase.from('patients').select('*').order('name')
-  if (error) throw error
-  return data as Patient[]
+  const rows = [...db().patients].sort((a, b) => a.name.localeCompare(b.name))
+  return delay(rows)
 }
 
-export async function createPatient(input: Omit<Patient, 'id' | 'user_id' | 'status' | 'admission_date'>) {
-  const { data, error } = await supabase
-    .from('patients')
-    .insert({ ...input, status: 'Internado', admission_date: todayStr() })
-    .select()
-    .single()
-  if (error) throw error
-  const patient = data as Patient
-
-  await supabase.from('meal_plans').insert({ patient_id: patient.id, status: 'Rascunho', meals: EMPTY_MEALS })
-  await addAlert('info', `Novo paciente internado: ${patient.name} (${patient.room})`, patient.id)
-  return patient
+export async function createPatient(input: NewPatientInput) {
+  const patient: Patient = {
+    ...input,
+    id: newId('p'),
+    user_id: null,
+    status: 'Internado',
+    admission_date: todayStr(),
+  }
+  db().patients.push(patient)
+  db().plans.push({
+    id: newId('plan'),
+    patient_id: patient.id,
+    status: 'Rascunho',
+    meals: { ...EMPTY_MEALS },
+    generated_by_ai: false,
+    score: null,
+  })
+  pushAlert('info', `Novo paciente internado: ${patient.name} (${patient.room})`, patient.id)
+  commit()
+  return delay(patient)
 }
 
 export async function updatePatient(id: string, patch: Partial<Patient>) {
-  const { error } = await supabase.from('patients').update(patch).eq('id', id)
-  if (error) throw error
+  const p = db().patients.find((x) => x.id === id)
+  if (p) Object.assign(p, patch)
+  commit()
+  return delay(undefined)
 }
 
 export async function dischargePatient(patient: Patient) {
-  await supabase.from('patients').update({ status: 'Alta' }).eq('id', patient.id)
-  const { data: plan } = await supabase
-    .from('meal_plans')
-    .select('*')
-    .eq('patient_id', patient.id)
-    .maybeSingle()
-  if (plan?.status === 'Aprovado') {
-    await supabase.from('meal_plans').update({ status: 'Rascunho' }).eq('id', plan.id)
-  }
-  await addAlert('info', `Alta médica: ${patient.name} (${patient.room})`, patient.id)
+  const p = db().patients.find((x) => x.id === patient.id)
+  if (p) p.status = 'Alta'
+  const plan = db().plans.find((pl) => pl.patient_id === patient.id)
+  if (plan?.status === 'Aprovado') plan.status = 'Rascunho'
+  pushAlert('info', `Alta médica: ${patient.name} (${patient.room})`, patient.id)
+  commit()
+  return delay(undefined)
 }
 
 export async function getMyPatient(userId: string) {
-  const { data, error } = await supabase.from('patients').select('*').eq('user_id', userId).maybeSingle()
-  if (error) throw error
-  return data as Patient | null
+  return delay(db().patients.find((p) => p.user_id === userId) ?? null)
 }
 
 // ── Meal plans ──
 export async function getPlanForPatient(patientId: string) {
-  const { data, error } = await supabase
-    .from('meal_plans')
-    .select('*')
-    .eq('patient_id', patientId)
-    .maybeSingle()
-  if (error) throw error
-  return data as MealPlan | null
+  return delay(db().plans.find((pl) => pl.patient_id === patientId) ?? null)
 }
 
 export async function listPlans() {
-  const { data, error } = await supabase.from('meal_plans').select('*')
-  if (error) throw error
-  return data as MealPlan[]
+  return delay([...db().plans])
 }
 
-export async function savePlanMeals(planId: string, meals: MealPlan['meals']) {
-  const { error } = await supabase
-    .from('meal_plans')
-    .update({ meals, updated_at: new Date().toISOString() })
-    .eq('id', planId)
-  if (error) throw error
+export async function savePlanMeals(planId: string, meals: MealPlan['meals'], meta?: { generated_by_ai?: boolean; score?: number | null }) {
+  const plan = db().plans.find((pl) => pl.id === planId)
+  if (plan) {
+    plan.meals = meals
+    if (meta?.generated_by_ai !== undefined) plan.generated_by_ai = meta.generated_by_ai
+    if (meta?.score !== undefined) plan.score = meta.score
+  }
+  commit()
+  return delay(undefined)
 }
 
 export async function approvePlan(plan: MealPlan, patient: Patient) {
-  await supabase
-    .from('meal_plans')
-    .update({ status: 'Aprovado', approved_at: new Date().toISOString() })
-    .eq('id', plan.id)
+  const p = db().plans.find((pl) => pl.id === plan.id)
+  if (p) p.status = 'Aprovado'
   await generateDailyMealsForPatient(patient, plan)
-  await addAlert('info', `Plano aprovado: ${patient.name}`, patient.id)
+  pushAlert('info', `Plano aprovado: ${patient.name}`, patient.id)
+  commit()
+  return delay(undefined)
 }
 
 export async function draftPlan(planId: string) {
-  const { error } = await supabase.from('meal_plans').update({ status: 'Rascunho' }).eq('id', planId)
-  if (error) throw error
+  const p = db().plans.find((pl) => pl.id === planId)
+  if (p) p.status = 'Rascunho'
+  commit()
+  return delay(undefined)
 }
 
 // ── Daily meals ──
 export async function listDailyMealsForDate(date: string) {
-  const { data, error } = await supabase.from('daily_meals').select('*').eq('date', date)
-  if (error) throw error
-  return data as DailyMeal[]
+  return delay(db().dailyMeals.filter((d) => d.date === date))
 }
 
 export async function generateDailyMealsForPatient(patient: Patient, plan: MealPlan) {
   const date = todayStr()
-  const existing = await listDailyMealsForDate(date)
+  const existing = db().dailyMeals
   const rows = MEAL_TYPES.filter(
-    (type) => !existing.some((d) => d.patient_id === patient.id && d.type === type),
-  ).map((type, _i) => {
+    (type) => !existing.some((d) => d.patient_id === patient.id && d.type === type && d.date === date),
+  ).map((type) => {
     const key = MEAL_KEYS[MEAL_TYPES.indexOf(type)]
     return {
+      id: newId('dm'),
       patient_id: patient.id,
       date,
       type,
-      status: 'Pendente' as const,
+      status: 'Pendente' as MealStatus,
       items: plan.meals[key] || '',
     }
   })
-  if (rows.length) {
-    const { error } = await supabase.from('daily_meals').insert(rows)
-    if (error) throw error
-  }
+  db().dailyMeals.push(...rows)
+  commit()
+  return delay(undefined)
+}
+
+const NEXT_STATUS: Record<MealStatus, MealStatus> = {
+  Pendente: 'Em Preparo',
+  'Em Preparo': 'Pronta',
+  Pronta: 'Entregue',
+  Entregue: 'Pendente',
+  Recusada: 'Pendente',
 }
 
 export async function cycleMealStatus(meal: DailyMeal) {
-  const cycle: Record<DailyMeal['status'], DailyMeal['status']> = {
-    Pendente: 'Em Preparo',
-    'Em Preparo': 'Pronta',
-    Pronta: 'Entregue',
-    Entregue: 'Pendente',
-  }
-  const next = cycle[meal.status]
-  const { error } = await supabase.from('daily_meals').update({ status: next }).eq('id', meal.id)
-  if (error) throw error
-  return next
+  const m = db().dailyMeals.find((d) => d.id === meal.id)
+  const next = NEXT_STATUS[meal.status]
+  if (m) m.status = next
+  commit()
+  return delay(next)
+}
+
+export async function setMealStatus(mealId: string, status: MealStatus) {
+  const m = db().dailyMeals.find((d) => d.id === mealId)
+  if (m) m.status = status
+  commit()
+  return delay(undefined)
 }
 
 // ── Stock ──
 export async function listStock() {
-  const { data, error } = await supabase.from('stock').select('*').order('name')
-  if (error) throw error
-  return data as StockItem[]
+  return delay([...db().stock].sort((a, b) => a.name.localeCompare(b.name)))
 }
 
 export async function saveStock(id: string | null, input: Omit<StockItem, 'id'>) {
   if (id) {
-    const { error } = await supabase.from('stock').update(input).eq('id', id)
-    if (error) throw error
+    const s = db().stock.find((x) => x.id === id)
+    if (s) Object.assign(s, input)
   } else {
-    const { error } = await supabase.from('stock').insert(input)
-    if (error) throw error
+    db().stock.push({ ...input, id: newId('st') })
   }
+  commit()
+  return delay(undefined)
 }
 
 export async function removeStock(id: string) {
-  const { error } = await supabase.from('stock').delete().eq('id', id)
-  if (error) throw error
+  db().stock = db().stock.filter((s) => s.id !== id)
+  commit()
+  return delay(undefined)
 }
 
 // ── Feedbacks ──
 export async function listFeedbacks() {
-  const { data, error } = await supabase
-    .from('feedbacks')
-    .select('*')
-    .order('created_at', { ascending: false })
-  if (error) throw error
-  return data as Feedback[]
+  return delay(
+    [...db().feedbacks].sort((a, b) => (a.created_at < b.created_at ? 1 : -1)),
+  )
 }
 
 export async function addFeedback(input: {
@@ -180,28 +188,69 @@ export async function addFeedback(input: {
   notes: string
   created_by: string
 }) {
-  const { error } = await supabase.from('feedbacks').insert({ ...input, date: todayStr() })
-  if (error) throw error
+  db().feedbacks.push({
+    id: newId('fb'),
+    patient_id: input.patient_id,
+    meal_type: input.meal_type,
+    rating: input.rating,
+    notes: input.notes,
+    date: todayStr(),
+    created_at: new Date().toISOString(),
+  })
+  commit()
+  return delay(undefined)
 }
 
 // ── Alerts ──
 export async function listAlerts() {
-  const { data, error } = await supabase
-    .from('alerts')
-    .select('*')
-    .order('created_at', { ascending: false })
-    .limit(5)
-  if (error) throw error
-  return data as Alert[]
+  return delay(
+    [...db().alerts].sort((a, b) => (a.created_at < b.created_at ? 1 : -1)).slice(0, 6),
+  )
+}
+
+function pushAlert(type: string, message: string, patientId: string | null) {
+  db().alerts.unshift({
+    id: newId('al'),
+    type,
+    message,
+    patient_id: patientId,
+    created_at: new Date().toISOString(),
+  })
 }
 
 export async function addAlert(type: string, message: string, patientId: string | null) {
-  await supabase.from('alerts').insert({ type, message, patient_id: patientId })
+  pushAlert(type, message, patientId)
+  commit()
+  return delay(undefined)
 }
 
 // ── Profiles (Usuários) ──
 export async function listProfiles() {
-  const { data, error } = await supabase.from('profiles').select('id, name, role')
-  if (error) throw error
-  return data as Profile[]
+  return delay([...db().profiles])
+}
+
+export async function createProfile(input: { name: string; email: string; role: Role; patientId?: string }) {
+  const profile: Profile = { id: newId('u'), name: input.name, email: input.email, role: input.role }
+  db().profiles.push(profile)
+  if (input.role === 'paciente' && input.patientId) {
+    const patient = db().patients.find((p) => p.id === input.patientId)
+    if (patient) patient.user_id = profile.id
+  }
+  commit()
+  return delay(profile)
+}
+
+export async function updateProfile(id: string, patch: { name: string; role: Role }) {
+  const p = db().profiles.find((x) => x.id === id)
+  if (p) Object.assign(p, patch)
+  commit()
+  return delay(undefined)
+}
+
+export async function deleteProfile(id: string) {
+  db().profiles = db().profiles.filter((p) => p.id !== id)
+  const patient = db().patients.find((p) => p.user_id === id)
+  if (patient) patient.user_id = null
+  commit()
+  return delay(undefined)
 }

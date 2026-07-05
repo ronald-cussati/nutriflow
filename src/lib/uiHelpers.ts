@@ -1,4 +1,8 @@
-import type { MealType, Role } from './types'
+import type { MealType, RiskLevel, Role } from './types'
+
+export function riskBadgeClass(risk: RiskLevel) {
+  return risk === 'Alto' ? 'bg-r' : risk === 'Moderado' ? 'bg-y' : 'bg-g'
+}
 
 export function initials(name: string) {
   return name.split(' ').slice(0, 2).map((w) => w[0]).join('').toUpperCase()

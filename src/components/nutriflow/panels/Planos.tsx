@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { CheckCircle2, ClipboardList, Pencil, RotateCcw, Sparkles } from 'lucide-react'
 import { approvePlan, draftPlan, listPatients, listPlans } from '../../../lib/api'
 import { toast } from '../../../lib/toast'
 import { useAuth } from '../../../lib/authContext'
@@ -70,8 +71,9 @@ export function Planos() {
       </div>
       {!filtered.length ? (
         <div className="emp">
-          <div className="ei">📋</div>
+          <div className="ei"><ClipboardList size={30} /></div>
           <h3>Nenhum plano encontrado</h3>
+          <p>Ajuste o filtro de status ou cadastre um paciente.</p>
         </div>
       ) : (
         filtered.map((p) => {
@@ -92,21 +94,28 @@ export function Planos() {
                     </div>
                   </div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                  {plan.generated_by_ai ? (
+                    <span className="bg bg-p"><Sparkles size={12} /> IA</span>
+                  ) : null}
+                  {plan.score != null ? <span className="bg bg-b">Score {plan.score}/100</span> : null}
                   <span className={`bg ${plan.status === 'Aprovado' ? 'bg-g' : 'bg-y'}`}>{plan.status}</span>
                   {CAN.editPlan(role) ? (
                     <button className="btn btn-s btn-sm" onClick={() => setEditing(p)}>
-                      ✏️ Editar
+                      <Pencil size={14} />
+                      Editar
                     </button>
                   ) : null}
                   {CAN.approvePlan(role) && plan.status === 'Rascunho' ? (
                     <button className="btn btn-p btn-sm" onClick={() => handleApprove(plan, p)}>
-                      ✅ Aprovar
+                      <CheckCircle2 size={14} />
+                      Aprovar
                     </button>
                   ) : null}
                   {CAN.approvePlan(role) && plan.status === 'Aprovado' ? (
                     <button className="btn btn-w btn-sm" onClick={() => handleDraft(plan.id)}>
-                      🔄 Rascunho
+                      <RotateCcw size={14} />
+                      Rascunho
                     </button>
                   ) : null}
                 </div>

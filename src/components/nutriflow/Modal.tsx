@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { X } from 'lucide-react'
 
 export function Modal({
   open,
@@ -25,7 +26,7 @@ export function Modal({
         <div className="mh">
           <div className="mt">{title}</div>
           <div className="mc" onClick={onClose}>
-            ✕
+            <X size={17} />
           </div>
         </div>
         {children}

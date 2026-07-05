@@ -1,8 +1,13 @@
 import { useEffect, useState } from 'react'
+import { Activity, HeartPulse, Pill, Utensils } from 'lucide-react'
 import { Modal } from './Modal'
 import { createPatient, updatePatient } from '../../lib/api'
 import { toast } from '../../lib/toast'
-import type { Patient } from '../../lib/types'
+import { DIET_TYPES, RISK_LEVELS, type DietType, type Patient, type RiskLevel } from '../../lib/types'
+
+function splitList(v: string) {
+  return v.split(',').map((s) => s.trim()).filter(Boolean)
+}
 
 export function PatientModal({
   open,
@@ -19,8 +24,13 @@ export function PatientModal({
   const [age, setAge] = useState('')
   const [room, setRoom] = useState('')
   const [gender, setGender] = useState('Masculino')
+  const [dietType, setDietType] = useState<DietType>('Livre')
+  const [risk, setRisk] = useState<RiskLevel>('Baixo')
   const [conditions, setConditions] = useState('')
   const [restrictions, setRestrictions] = useState('')
+  const [medications, setMedications] = useState('')
+  const [drugAllergies, setDrugAllergies] = useState('')
+  const [foodAllergies, setFoodAllergies] = useState('')
   const [notes, setNotes] = useState('')
   const [saving, setSaving] = useState(false)
 
@@ -30,8 +40,13 @@ export function PatientModal({
     setAge(patient ? String(patient.age) : '')
     setRoom(patient?.room ?? '')
     setGender(patient?.gender ?? 'Masculino')
+    setDietType(patient?.diet_type ?? 'Livre')
+    setRisk(patient?.nutritional_risk ?? 'Baixo')
     setConditions(patient?.conditions.join(', ') ?? '')
     setRestrictions(patient?.restrictions.join(', ') ?? '')
+    setMedications(patient?.medications.join(', ') ?? '')
+    setDrugAllergies(patient?.drug_allergies.join(', ') ?? '')
+    setFoodAllergies(patient?.food_allergies.join(', ') ?? '')
     setNotes(patient?.notes ?? '')
   }, [open, patient])
 
@@ -47,8 +62,13 @@ export function PatientModal({
         age: Number(age),
         room: room.trim(),
         gender,
-        conditions: conditions.split(',').map((s) => s.trim()).filter(Boolean),
-        restrictions: restrictions.split(',').map((s) => s.trim()).filter(Boolean),
+        diet_type: dietType,
+        nutritional_risk: risk,
+        conditions: splitList(conditions),
+        restrictions: splitList(restrictions),
+        medications: splitList(medications),
+        drug_allergies: splitList(drugAllergies),
+        food_allergies: splitList(foodAllergies),
         notes: notes.trim(),
       }
       if (patient) {
@@ -68,7 +88,8 @@ export function PatientModal({
   }
 
   return (
-    <Modal open={open} onClose={onClose} title={patient ? 'Editar Paciente' : 'Novo Paciente'} large>
+    <Modal open={open} onClose={onClose} title={patient ? 'Editar paciente' : 'Novo paciente'} large>
+      <div className="section-label"><Activity size={13} /> Identificação</div>
       <div className="fr">
         <div className="fg">
           <label>Nome completo *</label>
@@ -81,7 +102,7 @@ export function PatientModal({
       </div>
       <div className="fr">
         <div className="fg">
-          <label>Quarto/Leito *</label>
+          <label>Quarto / Leito *</label>
           <input className="fc" value={room} onChange={(e) => setRoom(e.target.value)} />
         </div>
         <div className="fg">
@@ -93,39 +114,94 @@ export function PatientModal({
           </select>
         </div>
       </div>
+
+      <div className="section-label"><HeartPulse size={13} /> Quadro clínico</div>
+      <div className="fr">
+        <div className="fg">
+          <label>Tipo de dieta prescrita</label>
+          <select className="fc" value={dietType} onChange={(e) => setDietType(e.target.value as DietType)}>
+            {DIET_TYPES.map((d) => (
+              <option key={d} value={d}>{d}</option>
+            ))}
+          </select>
+        </div>
+        <div className="fg">
+          <label>Risco nutricional</label>
+          <select className="fc" value={risk} onChange={(e) => setRisk(e.target.value as RiskLevel)}>
+            {RISK_LEVELS.map((r) => (
+              <option key={r} value={r}>{r}</option>
+            ))}
+          </select>
+        </div>
+      </div>
       <div className="fg">
-        <label>Condições médicas (vírgula para separar)</label>
+        <label>Condições médicas / comorbidades</label>
         <input
           className="fc"
-          placeholder="ex: Diabetes tipo 2, Hipertensão"
+          placeholder="ex: Diabetes tipo 2, Hipertensão, Insuficiência renal"
           value={conditions}
           onChange={(e) => setConditions(e.target.value)}
         />
+        <div className="field-hint">Separe cada item por vírgula.</div>
       </div>
+
+      <div className="section-label"><Pill size={13} /> Medicações & alergias</div>
       <div className="fg">
-        <label>Restrições alimentares (vírgula para separar)</label>
+        <label>Medicamentos em uso</label>
         <input
           className="fc"
-          placeholder="ex: Sem glúten, Baixo sódio"
+          placeholder="ex: Metformina, Losartana, Insulina"
+          value={medications}
+          onChange={(e) => setMedications(e.target.value)}
+        />
+      </div>
+      <div className="fr">
+        <div className="fg">
+          <label>Alergias a medicamentos</label>
+          <input
+            className="fc"
+            placeholder="ex: Penicilina, Dipirona"
+            value={drugAllergies}
+            onChange={(e) => setDrugAllergies(e.target.value)}
+          />
+        </div>
+        <div className="fg">
+          <label>Alergias / intolerâncias alimentares</label>
+          <input
+            className="fc"
+            placeholder="ex: Glúten, Lactose, Amendoim"
+            value={foodAllergies}
+            onChange={(e) => setFoodAllergies(e.target.value)}
+          />
+        </div>
+      </div>
+
+      <div className="section-label"><Utensils size={13} /> Dieta & observações</div>
+      <div className="fg">
+        <label>Restrições alimentares</label>
+        <input
+          className="fc"
+          placeholder="ex: Baixo sódio, Sem açúcar, Consistência pastosa"
           value={restrictions}
           onChange={(e) => setRestrictions(e.target.value)}
         />
       </div>
       <div className="fg">
-        <label>Notas médicas</label>
+        <label>Observações clínicas</label>
         <textarea
           className="fc"
-          placeholder="Observações adicionais..."
+          placeholder="Observações relevantes para a equipe..."
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
         />
       </div>
-      <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 8 }}>
+
+      <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 10 }}>
         <button className="btn btn-s" onClick={onClose}>
           Cancelar
         </button>
         <button className="btn btn-p" onClick={handleSave} disabled={saving}>
-          {saving ? 'Salvando...' : 'Salvar Paciente'}
+          {saving ? 'Salvando...' : 'Salvar paciente'}
         </button>
       </div>
     </Modal>

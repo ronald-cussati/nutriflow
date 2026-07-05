@@ -9,8 +9,24 @@ export type Role =
 export type Profile = {
   id: string
   name: string
+  email: string
   role: Role
 }
+
+// ── Clínico ──
+export const DIET_TYPES = [
+  'Livre',
+  'Branda',
+  'Pastosa',
+  'Líquida',
+  'Hipossódica',
+  'Diabética',
+  'Especial',
+] as const
+export type DietType = (typeof DIET_TYPES)[number]
+
+export const RISK_LEVELS = ['Baixo', 'Moderado', 'Alto'] as const
+export type RiskLevel = (typeof RISK_LEVELS)[number]
 
 export type Patient = {
   id: string
@@ -21,6 +37,11 @@ export type Patient = {
   gender: string | null
   conditions: string[]
   restrictions: string[]
+  medications: string[]
+  drug_allergies: string[]
+  food_allergies: string[]
+  diet_type: DietType
+  nutritional_risk: RiskLevel
   notes: string | null
   status: 'Internado' | 'Alta'
   admission_date: string
@@ -68,14 +89,19 @@ export type MealPlan = {
   patient_id: string
   status: 'Rascunho' | 'Aprovado'
   meals: Meals
+  generated_by_ai: boolean
+  score: number | null
 }
+
+export const MEAL_STATUSES = ['Pendente', 'Em Preparo', 'Pronta', 'Entregue', 'Recusada'] as const
+export type MealStatus = (typeof MEAL_STATUSES)[number]
 
 export type DailyMeal = {
   id: string
   patient_id: string
   date: string
   type: MealType
-  status: 'Pendente' | 'Em Preparo' | 'Pronta' | 'Entregue'
+  status: MealStatus
   items: string | null
 }
 
@@ -111,10 +137,20 @@ export const ROLE_LABELS: Record<Role, string> = {
   nutricionista: 'Nutricionista',
   enfermeiro: 'Enfermeiro',
   cozinheiro: 'Cozinheiro',
-  admin: 'Admin',
+  admin: 'Administrador',
   paciente: 'Paciente',
 }
 
+export const ROLE_DESCRIPTIONS: Record<Role, string> = {
+  medico: 'Cadastra pacientes, ajusta condições clínicas e medicações, dá alta e acompanha feedbacks.',
+  nutricionista: 'Cria e aprova planos alimentares, gera dietas com IA e define restrições.',
+  enfermeiro: 'Registra a aceitação alimentar dos pacientes à beira-leito.',
+  cozinheiro: 'Prepara e entrega as refeições, atualizando o status em tempo real.',
+  admin: 'Acesso total ao sistema — gestão de equipe, pacientes e operação.',
+  paciente: 'Acompanha o próprio plano do dia e envia feedback das refeições.',
+}
+
+// ── Matriz de permissões (decretada por papel) ──
 export const CAN = {
   createPatient: (r?: Role) => r === 'medico' || r === 'admin',
   editPatient: (r?: Role) => r === 'medico' || r === 'admin',
@@ -123,6 +159,8 @@ export const CAN = {
   approvePlan: (r?: Role) => r === 'nutricionista' || r === 'admin',
   kitchen: (r?: Role) => r === 'cozinheiro' || r === 'admin',
   stock: (r?: Role) => r === 'cozinheiro' || r === 'admin',
-  addFeedback: (r?: Role) => r === 'enfermeiro' || r === 'admin',
-  manageUsers: (r?: Role) => r === 'admin' || r === 'medico',
+  addFeedback: (r?: Role) => r === 'medico' || r === 'enfermeiro' || r === 'admin',
+  manageUsers: (r?: Role) => r === 'admin',
+  viewPatients: (r?: Role) =>
+    r === 'medico' || r === 'nutricionista' || r === 'enfermeiro' || r === 'cozinheiro' || r === 'admin',
 }

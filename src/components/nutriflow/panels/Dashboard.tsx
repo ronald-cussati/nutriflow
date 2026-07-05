@@ -1,29 +1,32 @@
 import { useEffect, useState } from 'react'
-import { listAlerts, listDailyMealsForDate, listPatients, listPlans, listStock, todayStr } from '../../../lib/api'
+import { Activity, AlertTriangle, BedDouble, Bell, CheckCircle2, ClipboardList, TrendingUp } from 'lucide-react'
+import { listAlerts, listFeedbacks, listPatients, listPlans } from '../../../lib/api'
 import type { Alert, Patient } from '../../../lib/types'
 
 export function Dashboard() {
   const [patients, setPatients] = useState<Patient[]>([])
-  const [stats, setStats] = useState({ plans: 0, drafts: 0, meals: 0, delivered: 0, stock: 0 })
+  const [stats, setStats] = useState({ plans: 0, drafts: 0, highRisk: 0, acceptance: 0 })
   const [alerts, setAlerts] = useState<Alert[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     ;(async () => {
-      const [p, plans, daily, stock, al] = await Promise.all([
+      const [p, plans, fb, al] = await Promise.all([
         listPatients(),
         listPlans(),
-        listDailyMealsForDate(todayStr()),
-        listStock(),
+        listFeedbacks(),
         listAlerts(),
       ])
+      const internados = p.filter((x) => x.status === 'Internado')
+      const acceptance = fb.length
+        ? Math.round((fb.reduce((s, f) => s + f.rating, 0) / (fb.length * 5)) * 100)
+        : 0
       setPatients(p)
       setStats({
         plans: plans.filter((pl) => pl.status === 'Aprovado').length,
         drafts: plans.filter((pl) => pl.status === 'Rascunho').length,
-        meals: daily.length,
-        delivered: daily.filter((d) => d.status === 'Entregue').length,
-        stock: stock.length,
+        highRisk: internados.filter((x) => x.nutritional_risk === 'Alto').length,
+        acceptance,
       })
       setAlerts(al)
       setLoading(false)
@@ -36,34 +39,44 @@ export function Dashboard() {
 
   return (
     <div>
+      <div className="ph">
+        <div>
+          <h2>Visão geral</h2>
+          <p>Panorama do cuidado nutricional · {new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
+        </div>
+      </div>
       <div className="sg">
-        <div className="sc" data-icon="🏥">
-          <div className="sc-lbl">Pacientes Internados</div>
+        <div className="sc">
+          <div className="sc-ico"><BedDouble size={20} /></div>
+          <div className="sc-lbl">Pacientes internados</div>
           <div className="sc-val">{internados.length}</div>
-          <div className="sc-sub">Total no hospital</div>
+          <div className="sc-sub">Sob acompanhamento nutricional</div>
         </div>
-        <div className="sc" data-icon="📋">
-          <div className="sc-lbl">Planos Aprovados</div>
+        <div className="sc">
+          <div className="sc-ico"><ClipboardList size={20} /></div>
+          <div className="sc-lbl">Planos aprovados</div>
           <div className="sc-val">{stats.plans}</div>
-          <div className="sc-sub">{stats.drafts} aguardando</div>
+          <div className="sc-sub">{stats.drafts} em rascunho</div>
         </div>
-        <div className="sc" data-icon="🍽️">
-          <div className="sc-lbl">Refeições Hoje</div>
-          <div className="sc-val">{stats.meals}</div>
-          <div className="sc-sub">{stats.delivered} entregues</div>
+        <div className="sc">
+          <div className="sc-ico" style={{ background: 'var(--red-d)', color: 'var(--red)' }}><AlertTriangle size={20} /></div>
+          <div className="sc-lbl">Risco nutricional alto</div>
+          <div className="sc-val">{stats.highRisk}</div>
+          <div className="sc-sub">Requerem atenção prioritária</div>
         </div>
-        <div className="sc" data-icon="📦">
-          <div className="sc-lbl">Itens no Estoque</div>
-          <div className="sc-val">{stats.stock}</div>
-          <div className="sc-sub">Mês atual</div>
+        <div className="sc">
+          <div className="sc-ico" style={{ background: 'var(--acc2-d)', color: 'var(--acc2)' }}><TrendingUp size={20} /></div>
+          <div className="sc-lbl">Taxa de aceitação</div>
+          <div className="sc-val">{stats.acceptance}%</div>
+          <div className="sc-sub">Média das refeições avaliadas</div>
         </div>
       </div>
       <div className="g2">
         <div className="card">
           <div className="ch">
             <div>
-              <div className="ct">⚠️ Alertas</div>
-              <div className="cs">Eventos recentes</div>
+              <div className="ct"><Bell size={16} /> Alertas recentes</div>
+              <div className="cs">Eventos que pedem sua atenção</div>
             </div>
           </div>
           {alerts.length ? (
@@ -71,7 +84,7 @@ export function Dashboard() {
               <div className="alert-i" key={a.id}>
                 <div
                   className="alert-dot"
-                  style={{ background: a.type === 'warning' ? 'var(--yel)' : 'var(--acc2)' }}
+                  style={{ background: a.type === 'danger' ? 'var(--red)' : a.type === 'warning' ? 'var(--yel)' : 'var(--acc2)' }}
                 />
                 <div>
                   <div className="alert-txt">{a.message}</div>
@@ -81,7 +94,7 @@ export function Dashboard() {
             ))
           ) : (
             <div className="emp">
-              <div className="ei">✅</div>
+              <div className="ei"><CheckCircle2 size={30} /></div>
               <p>Sem alertas no momento</p>
             </div>
           )}
@@ -89,25 +102,28 @@ export function Dashboard() {
         <div className="card">
           <div className="ch">
             <div>
-              <div className="ct">📋 Pacientes Internados</div>
-              <div className="cs">Resumo rápido</div>
+              <div className="ct"><Activity size={16} /> Pacientes internados</div>
+              <div className="cs">Resumo clínico rápido</div>
             </div>
           </div>
           {internados.length ? (
             internados.map((p) => (
               <div className="alert-i" key={p.id}>
-                <div className="alert-dot" style={{ background: 'var(--acc)' }} />
+                <div
+                  className="alert-dot"
+                  style={{ background: p.nutritional_risk === 'Alto' ? 'var(--red)' : p.nutritional_risk === 'Moderado' ? 'var(--yel)' : 'var(--acc)' }}
+                />
                 <div>
                   <div className="alert-txt">
-                    {p.name} — Quarto {p.room}
+                    {p.name} · Quarto {p.room}
                   </div>
-                  <div className="alert-time">{p.conditions.join(', ') || 'Sem condições registradas'}</div>
+                  <div className="alert-time">{p.conditions.join(', ') || 'Sem condições registradas'} — dieta {p.diet_type}</div>
                 </div>
               </div>
             ))
           ) : (
             <div className="emp">
-              <div className="ei">🏥</div>
+              <div className="ei"><BedDouble size={30} /></div>
               <p>Nenhum paciente internado</p>
             </div>
           )}

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { BedDouble, ClipboardList, MessageSquare } from 'lucide-react'
 import { getMyPatient, getPlanForPatient, listDailyMealsForDate, todayStr } from '../../../lib/api'
 import { useAuth } from '../../../lib/authContext'
 import { MEAL_KEYS, MEAL_TYPES, type DailyMeal, type MealPlan, type Patient } from '../../../lib/types'
@@ -33,7 +34,7 @@ export function MeuPlano() {
   if (!patient) {
     return (
       <div className="emp">
-        <div className="ei">🏥</div>
+        <div className="ei"><BedDouble size={30} /></div>
         <h3>Nenhum registro de paciente vinculado</h3>
         <p>Peça para a equipe do hospital vincular seu login ao seu prontuário.</p>
       </div>
@@ -51,14 +52,15 @@ export function MeuPlano() {
         </div>
         <div className="ph-acts">
           <button className="btn btn-p btn-sm" onClick={() => setFbOpen(true)}>
-            💬 Dar feedback
+            <MessageSquare size={15} />
+            Dar feedback
           </button>
         </div>
       </div>
 
       {!plan || plan.status !== 'Aprovado' ? (
         <div className="emp">
-          <div className="ei">📋</div>
+          <div className="ei"><ClipboardList size={30} /></div>
           <h3>Seu plano ainda não foi aprovado</h3>
           <p>Assim que a nutricionista aprovar, ele aparece aqui.</p>
         </div>

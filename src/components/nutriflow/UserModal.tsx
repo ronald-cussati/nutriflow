@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Modal } from './Modal'
-import { createStaffUser, updateStaffUser } from '../../server/users'
+import { createProfile, updateProfile } from '../../lib/api'
 import { toast } from '../../lib/toast'
-import { ROLE_LABELS, type Patient, type Profile, type Role } from '../../lib/types'
+import { ROLE_DESCRIPTIONS, ROLE_LABELS, type Patient, type Profile, type Role } from '../../lib/types'
 
 const ROLES: Role[] = ['medico', 'nutricionista', 'enfermeiro', 'cozinheiro', 'admin', 'paciente']
 
@@ -21,7 +21,6 @@ export function UserModal({
 }) {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
   const [role, setRole] = useState<Role>('enfermeiro')
   const [patientId, setPatientId] = useState('')
   const [saving, setSaving] = useState(false)
@@ -29,38 +28,27 @@ export function UserModal({
   useEffect(() => {
     if (!open) return
     setName(profile?.name ?? '')
-    setEmail('')
-    setPassword('')
+    setEmail(profile?.email ?? '')
     setRole(profile?.role ?? 'enfermeiro')
     setPatientId(unlinkedPatients[0]?.id ?? '')
   }, [open, profile, unlinkedPatients])
 
   async function handleSave() {
     if (!name.trim() || (!profile && !email.trim())) {
-      toast('er', 'Campos obrigatórios')
+      toast('er', 'Campos obrigatórios', 'Preencha nome e e-mail')
       return
     }
     setSaving(true)
     try {
       if (profile) {
-        await updateStaffUser({
-          data: { id: profile.id, name: name.trim(), role, password: password || undefined },
-        })
+        await updateProfile(profile.id, { name: name.trim(), role })
         toast('ok', 'Usuário atualizado')
       } else {
-        if (!password) {
-          toast('er', 'Informe a senha')
-          setSaving(false)
-          return
-        }
-        await createStaffUser({
-          data: {
-            name: name.trim(),
-            email: email.trim(),
-            password,
-            role,
-            patientId: role === 'paciente' ? patientId : undefined,
-          },
+        await createProfile({
+          name: name.trim(),
+          email: email.trim(),
+          role,
+          patientId: role === 'paciente' ? patientId : undefined,
         })
         toast('ok', 'Usuário criado')
       }
@@ -74,39 +62,34 @@ export function UserModal({
   }
 
   return (
-    <Modal open={open} onClose={onClose} title={profile ? 'Editar Usuário' : 'Novo Usuário'}>
+    <Modal open={open} onClose={onClose} title={profile ? 'Editar usuário' : 'Novo usuário'}>
       <div className="fr">
         <div className="fg">
           <label>Nome *</label>
           <input className="fc" value={name} onChange={(e) => setName(e.target.value)} />
         </div>
         <div className="fg">
-          <label>Email {profile ? '' : '*'}</label>
+          <label>E-mail {profile ? '' : '*'}</label>
           <input
             className="fc"
             type="email"
             value={email}
             disabled={!!profile}
-            placeholder={profile ? '(não editável)' : ''}
+            placeholder={profile ? '(não editável)' : 'usuario@nutriflow.app'}
             onChange={(e) => setEmail(e.target.value)}
           />
         </div>
       </div>
-      <div className="fr">
-        <div className="fg">
-          <label>{profile ? 'Nova senha (opcional)' : 'Senha *'}</label>
-          <input className="fc" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
-        </div>
-        <div className="fg">
-          <label>Perfil *</label>
-          <select className="fc" value={role} onChange={(e) => setRole(e.target.value as Role)}>
-            {ROLES.map((r) => (
-              <option key={r} value={r}>
-                {ROLE_LABELS[r]}
-              </option>
-            ))}
-          </select>
-        </div>
+      <div className="fg">
+        <label>Perfil *</label>
+        <select className="fc" value={role} onChange={(e) => setRole(e.target.value as Role)}>
+          {ROLES.map((r) => (
+            <option key={r} value={r}>
+              {ROLE_LABELS[r]}
+            </option>
+          ))}
+        </select>
+        <div className="field-hint">{ROLE_DESCRIPTIONS[role]}</div>
       </div>
       {role === 'paciente' && !profile ? (
         <div className="fg">

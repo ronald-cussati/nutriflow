@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
+import { BedDouble, ClipboardList, Eye, LogOut, Pencil, Search, UserPlus } from 'lucide-react'
 import { dischargePatient, listPatients, listPlans } from '../../../lib/api'
 import { toast } from '../../../lib/toast'
 import { useAuth } from '../../../lib/authContext'
 import { CAN, type MealPlan, type Patient } from '../../../lib/types'
-import { initials } from '../../../lib/uiHelpers'
+import { initials, riskBadgeClass } from '../../../lib/uiHelpers'
 import { PatientModal } from '../PatientModal'
 import { PlanModal } from '../PlanModal'
 import { PatientDetailModal } from '../PatientDetailModal'
@@ -52,13 +53,17 @@ export function Pacientes() {
       <div className="ph">
         <div>
           <h2>Pacientes</h2>
-          <p>Gerenciamento de pacientes internados</p>
+          <p>Prontuário clínico e acompanhamento nutricional</p>
         </div>
         <div className="ph-acts">
-          <input className="fc" style={{ width: 200 }} placeholder="🔍 Buscar..." value={search} onChange={(e) => setSearch(e.target.value)} />
+          <div className="search-wrap">
+            <Search size={15} />
+            <input className="fc" style={{ width: 220 }} placeholder="Buscar por nome ou quarto..." value={search} onChange={(e) => setSearch(e.target.value)} />
+          </div>
           {CAN.createPatient(role) ? (
             <button className="btn btn-p btn-sm" onClick={() => setEditing(null)}>
-              + Novo Paciente
+              <UserPlus size={15} />
+              Novo paciente
             </button>
           ) : null}
         </div>
@@ -73,9 +78,9 @@ export function Pacientes() {
       </div>
       {!filtered.length ? (
         <div className="emp">
-          <div className="ei">🏥</div>
+          <div className="ei"><BedDouble size={30} /></div>
           <h3>Nenhum paciente {tab === 'internados' ? 'internado' : 'com alta'}</h3>
-          <p>Nenhum registro encontrado.</p>
+          <p>Nenhum registro encontrado com os filtros atuais.</p>
         </div>
       ) : (
         filtered.map((p) => {
@@ -91,35 +96,41 @@ export function Pacientes() {
                 <div className="pm">
                   Quarto {p.room} · {p.age} anos · {p.gender || '—'}
                 </div>
-                <div className="pm" style={{ marginTop: 4 }}>
-                  {p.conditions.slice(0, 3).map((c) => (
-                    <span className="bg bg-n" style={{ marginRight: 4, fontSize: 10 }} key={c}>
+                <div className="pm" style={{ marginTop: 6 }}>
+                  <span className={`bg ${riskBadgeClass(p.nutritional_risk)}`}>Risco {p.nutritional_risk.toLowerCase()}</span>
+                  <span className="bg bg-n">Dieta {p.diet_type}</span>
+                  {p.conditions.slice(0, 2).map((c) => (
+                    <span className="bg bg-n" key={c}>
                       {c}
                     </span>
                   ))}
                 </div>
               </div>
-              <div style={{ marginRight: 12, textAlign: 'right' }}>
+              <div style={{ textAlign: 'right' }}>
                 <span className={`bg ${status === 'Aprovado' ? 'bg-g' : status === 'Rascunho' ? 'bg-y' : 'bg-n'}`}>{status}</span>
-                <div style={{ fontSize: 11, color: 'var(--t3)', marginTop: 4 }}>{p.status === 'Alta' ? 'Alta médica' : 'Internado'}</div>
+                <div style={{ fontSize: 11, color: 'var(--t3)', marginTop: 6 }}>{p.status === 'Alta' ? 'Alta médica' : 'Internado'}</div>
               </div>
               <div className="pa">
                 <button className="btn btn-b btn-sm" onClick={() => setDetailFor(p)}>
+                  <Eye size={14} />
                   Ver
                 </button>
                 {CAN.editPatient(role) && p.status === 'Internado' ? (
                   <button className="btn btn-s btn-sm" onClick={() => setEditing(p)}>
+                    <Pencil size={14} />
                     Editar
                   </button>
                 ) : null}
                 {CAN.giveDischarge(role) && p.status === 'Internado' ? (
                   <button className="btn btn-w btn-sm" onClick={() => handleDischarge(p)}>
+                    <LogOut size={14} />
                     Alta
                   </button>
                 ) : null}
                 {CAN.editPlan(role) && p.status === 'Internado' ? (
                   <button className="btn btn-p btn-sm" onClick={() => setPlanFor(p)}>
-                    📋 Plano
+                    <ClipboardList size={14} />
+                    Plano
                   </button>
                 ) : null}
               </div>

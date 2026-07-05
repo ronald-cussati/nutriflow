@@ -85,11 +85,11 @@ export function FeedbackModal({
         <div className="fg">
           <label>Avaliação</label>
           <select className="fc" value={rating} onChange={(e) => setRating(e.target.value)}>
-            <option value="5">⭐⭐⭐⭐⭐ Excelente</option>
-            <option value="4">⭐⭐⭐⭐ Bom</option>
-            <option value="3">⭐⭐⭐ Regular</option>
-            <option value="2">⭐⭐ Ruim</option>
-            <option value="1">⭐ Muito ruim</option>
+            <option value="5">Excelente — aceitou tudo (5)</option>
+            <option value="4">Boa aceitação (4)</option>
+            <option value="3">Aceitação parcial (3)</option>
+            <option value="2">Baixa aceitação (2)</option>
+            <option value="1">Recusou a refeição (1)</option>
           </select>
         </div>
       </div>

@@ -23,7 +23,7 @@ export const Route = createRootRoute({
     links: [
       {
         rel: 'stylesheet',
-        href: 'https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap',
+        href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@500;600;700&display=swap',
       },
       {
         rel: 'stylesheet',
@@ -43,6 +43,12 @@ function RootDocument({ children }: { children: React.ReactNode }) {
     <html lang="pt-BR" suppressHydrationWarning>
       <head>
         <HeadContent />
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "try{var t=localStorage.getItem('nutriflow-theme');if(t==='dark'){document.documentElement.setAttribute('data-theme','dark')}else{document.documentElement.setAttribute('data-theme','light')}}catch(e){}",
+          }}
+        />
       </head>
       <body>
         <AuthProvider>{children}</AuthProvider>
