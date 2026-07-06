@@ -31,11 +31,12 @@ export function Modal({
 
   if (!open || typeof document === 'undefined') return null
 
-  // Renderiza via portal direto no <body>: evita que um ancestral com
-  // transform/animation (o rise-in dos painéis) vire "containing block" e
-  // prenda o modal fixed dentro de um retângulo menor em vez da viewport inteira.
+  // Monta o portal dentro do .nf já existente na página para herdar as CSS vars
+  // sem criar um segundo elemento .nf com fundo gradiente por cima de tudo.
+  const nfRoot = document.querySelector('.nf') ?? document.body
+
   return createPortal(
-    <div className="nf mo on">
+    <div className="mo on">
       <div className="mo-backdrop" onClick={onClose} aria-hidden="true" />
       <div className={`mo-box ${large ? 'mo-box-lg' : ''}`}>
         <div className="mh">
@@ -47,6 +48,7 @@ export function Modal({
         <div className="mb">{children}</div>
       </div>
     </div>,
-    document.body,
+    nfRoot,
   )
 }
+
