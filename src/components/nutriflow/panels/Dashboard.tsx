@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Activity, AlertTriangle, BedDouble, Bell, CheckCircle2, ChevronRight, ClipboardList, TrendingUp } from 'lucide-react'
 import { PanelSkeleton } from '../PanelSkeleton'
+import { InfoTip } from '../InfoTip'
 import { listAlerts, listFeedbacks, listPatients, listPlans } from '../../../lib/api'
 import { useAuth } from '../../../lib/authContext'
 import { useNavigation } from '../../../lib/navigationContext'
@@ -81,7 +82,10 @@ export function Dashboard() {
         </button>
         <div className="sc">
           <div className="sc-ico" style={{ background: 'var(--acc2-d)', color: 'var(--acc2)' }}><TrendingUp size={20} /></div>
-          <div className="sc-lbl">Taxa de aceitação</div>
+          <div className="sc-lbl">
+            Taxa de aceitação
+            <InfoTip text="Percentual médio de aceitação das refeições avaliadas nos feedbacks registrados pela equipe." />
+          </div>
           <div className="sc-val">{stats.acceptance}%</div>
           <div className="sc-sub">Média das refeições avaliadas</div>
         </div>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Save, Sparkles } from 'lucide-react'
 import { Modal } from './Modal'
+import { InfoTip } from './InfoTip'
 import { listStock, savePlanMeals } from '../../lib/api'
 import { generateMealPlan } from '../../server/mealPlan'
 import { compatibleStock, generateFallbackPlan } from '../../lib/aiFallback'
@@ -113,7 +114,12 @@ export function PlanModal({
           <span className="bg bg-y" key={a}>Alergia: {a}</span>
         ))}
         {aiGenerated ? <span className="bg bg-p"><Sparkles size={12} /> Gerado por IA</span> : null}
-        {score != null ? <span className="bg bg-g">Score {score}/100</span> : null}
+        {score != null ? (
+          <span className="bg bg-g">
+            Score {score}/100
+            <InfoTip text="Estimativa da adequação nutricional do plano ao quadro clínico e às restrições do paciente, calculada pela IA." />
+          </span>
+        ) : null}
       </div>
 
       {canEdit ? (

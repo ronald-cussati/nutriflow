@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Activity, HeartPulse, Pill, Utensils } from 'lucide-react'
 import { Modal } from './Modal'
+import { InfoTip } from './InfoTip'
 import { createPatient, updatePatient } from '../../lib/api'
 import { toast } from '../../lib/toast'
 import { DIET_TYPES, RISK_LEVELS, type DietType, type Patient, type RiskLevel } from '../../lib/types'
@@ -118,7 +119,10 @@ export function PatientModal({
       <div className="section-label"><HeartPulse size={13} /> Quadro clínico</div>
       <div className="fr">
         <div className="fg">
-          <label>Tipo de dieta prescrita</label>
+          <label>
+            Tipo de dieta prescrita
+            <InfoTip text="Consistência/composição da alimentação definida pela equipe clínica — orienta o que a IA pode sugerir no plano." />
+          </label>
           <select className="fc" value={dietType} onChange={(e) => setDietType(e.target.value as DietType)}>
             {DIET_TYPES.map((d) => (
               <option key={d} value={d}>{d}</option>
@@ -126,7 +130,10 @@ export function PatientModal({
           </select>
         </div>
         <div className="fg">
-          <label>Risco nutricional</label>
+          <label>
+            Risco nutricional
+            <InfoTip text="Classificação de prioridade clínica: Alto exige atenção prioritária da equipe, Moderado requer acompanhamento, Baixo é rotina." />
+          </label>
           <select className="fc" value={risk} onChange={(e) => setRisk(e.target.value as RiskLevel)}>
             {RISK_LEVELS.map((r) => (
               <option key={r} value={r}>{r}</option>
