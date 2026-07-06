@@ -4,6 +4,7 @@ import { getMyPatient, getPlanForPatient, listDailyMealsForDate, todayStr } from
 import { useAuth } from '../../../lib/authContext'
 import { MEAL_KEYS, MEAL_TYPES, type DailyMeal, type MealPlan, type Patient } from '../../../lib/types'
 import { FeedbackModal } from '../FeedbackModal'
+import { PanelSkeleton } from '../PanelSkeleton'
 
 export function MeuPlano() {
   const { session } = useAuth()
@@ -29,7 +30,7 @@ export function MeuPlano() {
     refresh()
   }, [session])
 
-  if (loading) return <div className="emp">Carregando...</div>
+  if (loading) return <PanelSkeleton />
 
   if (!patient) {
     return (

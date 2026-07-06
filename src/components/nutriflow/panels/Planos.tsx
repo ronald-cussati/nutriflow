@@ -6,6 +6,7 @@ import { useAuth } from '../../../lib/authContext'
 import { CAN, MEAL_KEYS, MEAL_TYPES, type MealPlan, type Patient } from '../../../lib/types'
 import { initials } from '../../../lib/uiHelpers'
 import { PlanModal } from '../PlanModal'
+import { PanelSkeleton } from '../PanelSkeleton'
 
 export function Planos() {
   const { profile } = useAuth()
@@ -50,7 +51,7 @@ export function Planos() {
     return true
   })
 
-  if (loading) return <div className="emp">Carregando...</div>
+  if (loading) return <PanelSkeleton />
 
   return (
     <div>

@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   ChefHat,
   ClipboardList,
   LayoutDashboard,
   Leaf,
   LogOut,
+  Menu,
   MessageSquare,
   Package,
   Users,
@@ -54,10 +55,23 @@ export function AppShell() {
   const role = profile?.role
   const visible = NAV_ITEMS.filter((n) => role && n.roles.includes(role))
   const [panel, setPanel] = useState(visible[0]?.id ?? 'dashboard')
+  const [mobileNavOpen, setMobileNavOpen] = useState(false)
 
   const activeItem = NAV_ITEMS.find((n) => n.id === panel)
   const Panel = PANELS[panel] ?? Dashboard
   const ActiveIcon = activeItem?.icon ?? LayoutDashboard
+
+  useEffect(() => {
+    document.body.style.overflow = mobileNavOpen ? 'hidden' : ''
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [mobileNavOpen])
+
+  function selectPanel(id: string) {
+    setPanel(id)
+    setMobileNavOpen(false)
+  }
 
   if (!profile) return <div className="emp">Carregando perfil...</div>
 
@@ -65,7 +79,10 @@ export function AppShell() {
     <div className="nf">
       <ToastHost />
       <div id="app">
-        <div id="sidebar">
+        {mobileNavOpen ? (
+          <div className="mobile-backdrop" onClick={() => setMobileNavOpen(false)} />
+        ) : null}
+        <div id="sidebar" className={mobileNavOpen ? 'mobile-open' : ''}>
           <div className="s-head">
             <div className="s-logo">
               <div className="ico">
@@ -86,20 +103,28 @@ export function AppShell() {
               <div className="u-role">{ROLE_LABELS[profile.role]}</div>
             </div>
           </div>
-          <div className="s-nav">
+          <nav className="s-nav" aria-label="Navegação principal">
             <div className="s-nav-label">Navegação</div>
             {visible.map((item) => {
               const Icon = item.icon
+              const active = panel === item.id
               return (
-                <div key={item.id} className={`nav-i ${panel === item.id ? 'on' : ''}`} onClick={() => setPanel(item.id)}>
+                <button
+                  key={item.id}
+                  type="button"
+                  className={`nav-i ${active ? 'on' : ''}`}
+                  onClick={() => selectPanel(item.id)}
+                  aria-current={active ? 'page' : undefined}
+                  title={item.label}
+                >
                   <span className="ni">
                     <Icon size={18} />
                   </span>
                   <span>{item.label}</span>
-                </div>
+                </button>
               )
             })}
-          </div>
+          </nav>
           <div className="s-foot">
             <ThemeToggle />
             <button className="btn btn-s btn-full btn-sm" onClick={signOut}>
@@ -112,7 +137,15 @@ export function AppShell() {
         <div id="main">
           <div id="topbar">
             <div className="tb-title">
-              <ActiveIcon size={19} />
+              <button
+                type="button"
+                className="hamburger-btn"
+                onClick={() => setMobileNavOpen(true)}
+                aria-label="Abrir menu de navegação"
+              >
+                <Menu size={20} />
+              </button>
+              <ActiveIcon size={19} className="tb-icon" />
               {activeItem?.label ?? ''}
             </div>
           </div>

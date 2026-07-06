@@ -8,6 +8,7 @@ import { initials, riskBadgeClass } from '../../../lib/uiHelpers'
 import { PatientModal } from '../PatientModal'
 import { PlanModal } from '../PlanModal'
 import { PatientDetailModal } from '../PatientDetailModal'
+import { PanelSkeleton } from '../PanelSkeleton'
 
 export function Pacientes() {
   const { profile } = useAuth()
@@ -46,7 +47,7 @@ export function Pacientes() {
     return p.status === 'Alta' && match
   })
 
-  if (loading) return <div className="emp">Carregando...</div>
+  if (loading) return <PanelSkeleton />
 
   return (
     <div>
@@ -73,13 +74,25 @@ export function Pacientes() {
           )}
         </div>
       </div>
-      <div className="tabs">
-        <div className={`tab ${tab === 'internados' ? 'on' : ''}`} onClick={() => setTab('internados')}>
+      <div className="tabs" role="tablist">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === 'internados'}
+          className={`tab ${tab === 'internados' ? 'on' : ''}`}
+          onClick={() => setTab('internados')}
+        >
           Internados
-        </div>
-        <div className={`tab ${tab === 'alta' ? 'on' : ''}`} onClick={() => setTab('alta')}>
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === 'alta'}
+          className={`tab ${tab === 'alta' ? 'on' : ''}`}
+          onClick={() => setTab('alta')}
+        >
           Histórico / Alta
-        </div>
+        </button>
       </div>
       {!filtered.length ? (
         <div className="emp">

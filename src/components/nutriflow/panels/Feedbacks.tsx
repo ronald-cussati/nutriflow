@@ -5,6 +5,7 @@ import { useAuth } from '../../../lib/authContext'
 import { CAN, type Feedback, type Patient } from '../../../lib/types'
 import { fmtDate, initials } from '../../../lib/uiHelpers'
 import { FeedbackModal } from '../FeedbackModal'
+import { PanelSkeleton } from '../PanelSkeleton'
 
 function Stars({ rating }: { rating: number }) {
   return (
@@ -34,7 +35,7 @@ export function Feedbacks() {
     refresh()
   }, [])
 
-  if (loading) return <div className="emp">Carregando...</div>
+  if (loading) return <PanelSkeleton />
 
   const aceitas = feedbacks.filter((f) => f.rating >= 4).length
   const parciais = feedbacks.filter((f) => f.rating === 3 || f.rating === 2).length

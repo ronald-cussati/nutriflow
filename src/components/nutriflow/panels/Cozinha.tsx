@@ -4,6 +4,7 @@ import { cycleMealStatus, listDailyMealsForDate, listPatients, setMealStatus, to
 import { toast } from '../../../lib/toast'
 import { MEAL_WINDOWS, isInWindow, windowLabel } from '../../../lib/uiHelpers'
 import type { DailyMeal, MealStatus, Patient } from '../../../lib/types'
+import { PanelSkeleton } from '../PanelSkeleton'
 
 function statusIcon(status: MealStatus) {
   if (status === 'Em Preparo') return <Flame size={13} />
@@ -49,7 +50,7 @@ export function Cozinha() {
     refresh()
   }
 
-  if (loading) return <div className="emp">Carregando...</div>
+  if (loading) return <PanelSkeleton />
 
   return (
     <div>
@@ -131,7 +132,8 @@ export function Cozinha() {
                     : m.status === 'Recusada' ? 'recusada'
                     : ''
                   return (
-                    <div
+                    <button
+                      type="button"
                       className={`chip ${chipClass}`}
                       onClick={() => handleCycle(m, p.name)}
                       onContextMenu={(e) => {
@@ -139,6 +141,7 @@ export function Cozinha() {
                         handleRefuse(m, p.name)
                       }}
                       title={`${m.items || 'Sem itens definidos'}\n(clique: avançar status · clique direito: recusar)`}
+                      aria-label={`${m.type}: ${m.status}. Ativar para avançar o status.`}
                       key={m.id}
                     >
                       <span className="cn">{m.type}</span>
@@ -146,7 +149,7 @@ export function Cozinha() {
                         {statusIcon(m.status)}
                         {m.status}
                       </span>
-                    </div>
+                    </button>
                   )
                 })}
               </div>

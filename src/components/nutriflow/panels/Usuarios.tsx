@@ -6,6 +6,7 @@ import { useAuth } from '../../../lib/authContext'
 import { ROLE_DESCRIPTIONS, ROLE_LABELS, type Patient, type Profile } from '../../../lib/types'
 import { initials, roleBadgeClass, avatarColor, bgForRole } from '../../../lib/uiHelpers'
 import { UserModal } from '../UserModal'
+import { PanelSkeleton } from '../PanelSkeleton'
 
 export function Usuarios() {
   const { session } = useAuth()
@@ -36,7 +37,7 @@ export function Usuarios() {
     }
   }
 
-  if (loading) return <div className="emp">Carregando...</div>
+  if (loading) return <PanelSkeleton />
 
   const unlinkedPatients = patients.filter((p) => !p.user_id)
 
@@ -61,7 +62,7 @@ export function Usuarios() {
               <tr>
                 <th>Usuário</th>
                 <th>Perfil</th>
-                <th>Permissões</th>
+                <th className="th-permissions">Permissões</th>
                 <th style={{ textAlign: 'right' }}>Ações</th>
               </tr>
             </thead>
@@ -82,7 +83,7 @@ export function Usuarios() {
                   <td>
                     <span className={`bg ${roleBadgeClass(u.role)}`}>{ROLE_LABELS[u.role]}</span>
                   </td>
-                  <td style={{ maxWidth: 320, fontSize: 12 }}>{ROLE_DESCRIPTIONS[u.role]}</td>
+                  <td className="th-permissions" style={{ maxWidth: 320, fontSize: 12 }}>{ROLE_DESCRIPTIONS[u.role]}</td>
                   <td>
                     <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
                       <button className="btn btn-b btn-sm icon-btn" onClick={() => setEditing(u)} aria-label="Editar">

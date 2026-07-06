@@ -5,6 +5,7 @@ import { toast } from '../../../lib/toast'
 import { fmtDate } from '../../../lib/uiHelpers'
 import type { StockItem } from '../../../lib/types'
 import { StockModal } from '../StockModal'
+import { PanelSkeleton } from '../PanelSkeleton'
 
 const WEEK = 7 * 24 * 60 * 60 * 1000
 
@@ -37,7 +38,7 @@ export function Estoque() {
     refresh()
   }
 
-  if (loading) return <div className="emp">Carregando...</div>
+  if (loading) return <PanelSkeleton />
 
   const now = Date.now()
   const soon = stock.filter((s) => statusOf(s, now) === 'soon').length

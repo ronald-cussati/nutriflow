@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Activity, AlertTriangle, BedDouble, Bell, CheckCircle2, ClipboardList, TrendingUp } from 'lucide-react'
+import { PanelSkeleton } from '../PanelSkeleton'
 import { listAlerts, listFeedbacks, listPatients, listPlans } from '../../../lib/api'
 import type { Alert, Patient } from '../../../lib/types'
 
@@ -35,7 +36,7 @@ export function Dashboard() {
 
   const internados = patients.filter((p) => p.status === 'Internado')
 
-  if (loading) return <div className="emp">Carregando...</div>
+  if (loading) return <PanelSkeleton />
 
   return (
     <div>
