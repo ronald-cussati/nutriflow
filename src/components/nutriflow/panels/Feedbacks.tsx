@@ -40,6 +40,8 @@ export function Feedbacks() {
   const aceitas = feedbacks.filter((f) => f.rating >= 4).length
   const parciais = feedbacks.filter((f) => f.rating === 3 || f.rating === 2).length
   const recusadas = feedbacks.filter((f) => f.rating <= 1).length
+  const total = feedbacks.length || 1
+  const pct = (n: number) => Math.round((n / total) * 100)
 
   return (
     <div>
@@ -63,14 +65,17 @@ export function Feedbacks() {
           <div className="sc">
             <div className="sc-val" style={{ color: 'var(--acc)' }}>{aceitas}</div>
             <div className="sc-sub">Bem aceitas</div>
+            <div className="fb-bar"><div className="fb-bar-fill" style={{ width: `${pct(aceitas)}%`, background: 'var(--acc)' }} /></div>
           </div>
           <div className="sc">
             <div className="sc-val" style={{ color: 'var(--yel)' }}>{parciais}</div>
             <div className="sc-sub">Aceitação parcial</div>
+            <div className="fb-bar"><div className="fb-bar-fill" style={{ width: `${pct(parciais)}%`, background: 'var(--yel)' }} /></div>
           </div>
           <div className="sc">
             <div className="sc-val" style={{ color: 'var(--red)' }}>{recusadas}</div>
             <div className="sc-sub">Recusadas</div>
+            <div className="fb-bar"><div className="fb-bar-fill" style={{ width: `${pct(recusadas)}%`, background: 'var(--red)' }} /></div>
           </div>
         </div>
       ) : null}
