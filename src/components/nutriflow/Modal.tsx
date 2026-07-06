@@ -31,24 +31,24 @@ export function Modal({
 
   if (!open || typeof document === 'undefined') return null
 
-  // Monta o portal dentro do .nf já existente na página para herdar as CSS vars
-  // sem criar um segundo elemento .nf com fundo gradiente por cima de tudo.
-  const nfRoot = document.querySelector('.nf') ?? document.body
-
+  // Portal direto no body. As CSS vars estão definidas em :root,
+  // então .mo-box e .mo-backdrop herdam tudo corretamente sem precisar do .nf wrapper.
   return createPortal(
-    <div className="mo on">
+    <>
       <div className="mo-backdrop" onClick={onClose} aria-hidden="true" />
-      <div className={`mo-box ${large ? 'mo-box-lg' : ''}`}>
-        <div className="mh">
-          <div className="mt">{title}</div>
-          <button type="button" className="mc" onClick={onClose} aria-label="Fechar">
-            <X size={18} />
-          </button>
+      <div className={`mo on ${large ? 'mo-lg' : ''}`} role="dialog" aria-modal="true">
+        <div className={`mo-box ${large ? 'mo-box-lg' : ''}`}>
+          <div className="mh">
+            <div className="mt">{title}</div>
+            <button type="button" className="mc" onClick={onClose} aria-label="Fechar">
+              <X size={18} />
+            </button>
+          </div>
+          <div className="mb">{children}</div>
         </div>
-        <div className="mb">{children}</div>
       </div>
-    </div>,
-    nfRoot,
+    </>,
+    document.body,
   )
 }
 
