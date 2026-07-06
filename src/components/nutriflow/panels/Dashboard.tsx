@@ -1,10 +1,14 @@
 import { useEffect, useState } from 'react'
-import { Activity, AlertTriangle, BedDouble, Bell, CheckCircle2, ClipboardList, TrendingUp } from 'lucide-react'
+import { Activity, AlertTriangle, BedDouble, Bell, CheckCircle2, ChevronRight, ClipboardList, TrendingUp } from 'lucide-react'
 import { PanelSkeleton } from '../PanelSkeleton'
 import { listAlerts, listFeedbacks, listPatients, listPlans } from '../../../lib/api'
-import type { Alert, Patient } from '../../../lib/types'
+import { useAuth } from '../../../lib/authContext'
+import { useNavigation } from '../../../lib/navigationContext'
+import { CAN, type Alert, type Patient } from '../../../lib/types'
 
 export function Dashboard() {
+  const { profile } = useAuth()
+  const { goTo } = useNavigation()
   const [patients, setPatients] = useState<Patient[]>([])
   const [stats, setStats] = useState({ plans: 0, drafts: 0, highRisk: 0, acceptance: 0 })
   const [alerts, setAlerts] = useState<Alert[]>([])
@@ -35,6 +39,7 @@ export function Dashboard() {
   }, [])
 
   const internados = patients.filter((p) => p.status === 'Internado')
+  const canViewPlanos = CAN.viewPlanos(profile?.role)
 
   if (loading) return <PanelSkeleton />
 
@@ -47,24 +52,33 @@ export function Dashboard() {
         </div>
       </div>
       <div className="sg">
-        <div className="sc">
+        <button type="button" className="sc" onClick={() => goTo('pacientes')}>
           <div className="sc-ico"><BedDouble size={20} /></div>
           <div className="sc-lbl">Pacientes internados</div>
           <div className="sc-val">{internados.length}</div>
           <div className="sc-sub">Sob acompanhamento nutricional</div>
-        </div>
-        <div className="sc">
-          <div className="sc-ico"><ClipboardList size={20} /></div>
-          <div className="sc-lbl">Planos aprovados</div>
-          <div className="sc-val">{stats.plans}</div>
-          <div className="sc-sub">{stats.drafts} em rascunho</div>
-        </div>
-        <div className="sc">
+        </button>
+        {canViewPlanos ? (
+          <button type="button" className="sc" onClick={() => goTo('planos')}>
+            <div className="sc-ico"><ClipboardList size={20} /></div>
+            <div className="sc-lbl">Planos aprovados</div>
+            <div className="sc-val">{stats.plans}</div>
+            <div className="sc-sub">{stats.drafts} em rascunho</div>
+          </button>
+        ) : (
+          <div className="sc">
+            <div className="sc-ico"><ClipboardList size={20} /></div>
+            <div className="sc-lbl">Planos aprovados</div>
+            <div className="sc-val">{stats.plans}</div>
+            <div className="sc-sub">{stats.drafts} em rascunho</div>
+          </div>
+        )}
+        <button type="button" className="sc" onClick={() => goTo('pacientes')}>
           <div className="sc-ico" style={{ background: 'var(--red-d)', color: 'var(--red)' }}><AlertTriangle size={20} /></div>
           <div className="sc-lbl">Risco nutricional alto</div>
           <div className="sc-val">{stats.highRisk}</div>
           <div className="sc-sub">Requerem atenção prioritária</div>
-        </div>
+        </button>
         <div className="sc">
           <div className="sc-ico" style={{ background: 'var(--acc2-d)', color: 'var(--acc2)' }}><TrendingUp size={20} /></div>
           <div className="sc-lbl">Taxa de aceitação</div>
@@ -104,12 +118,12 @@ export function Dashboard() {
           <div className="ch">
             <div>
               <div className="ct"><Activity size={16} /> Pacientes internados</div>
-              <div className="cs">Resumo clínico rápido</div>
+              <div className="cs">Clique para abrir o prontuário</div>
             </div>
           </div>
           {internados.length ? (
             internados.map((p) => (
-              <div className="alert-i" key={p.id}>
+              <button type="button" className="alert-i" key={p.id} onClick={() => goTo('pacientes', p.id)}>
                 <div
                   className="alert-dot"
                   style={{ background: p.nutritional_risk === 'Alto' ? 'var(--red)' : p.nutritional_risk === 'Moderado' ? 'var(--yel)' : 'var(--acc)' }}
@@ -120,7 +134,8 @@ export function Dashboard() {
                   </div>
                   <div className="alert-time">{p.conditions.join(', ') || 'Sem condições registradas'} — dieta {p.diet_type}</div>
                 </div>
-              </div>
+                <ChevronRight size={16} className="alert-chevron" />
+              </button>
             ))
           ) : (
             <div className="emp">

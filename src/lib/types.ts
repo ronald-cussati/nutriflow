@@ -163,4 +163,5 @@ export const CAN = {
   manageUsers: (r?: Role) => r === 'admin',
   viewPatients: (r?: Role) =>
     r === 'medico' || r === 'nutricionista' || r === 'enfermeiro' || r === 'cozinheiro' || r === 'admin',
+  viewPlanos: (r?: Role) => r === 'medico' || r === 'nutricionista' || r === 'admin',
 }

@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
-import { BedDouble, ClipboardList, Eye, LogOut, Lock, Pencil, Search, UserPlus } from 'lucide-react'
+import { BedDouble, ChevronRight, ClipboardList, Eye, LogOut, Lock, Pencil, Search, UserPlus } from 'lucide-react'
 import { dischargePatient, listPatients, listPlans } from '../../../lib/api'
 import { toast } from '../../../lib/toast'
 import { useAuth } from '../../../lib/authContext'
+import { useNavigation } from '../../../lib/navigationContext'
 import { CAN, type MealPlan, type Patient } from '../../../lib/types'
 import { initials, riskBadgeClass } from '../../../lib/uiHelpers'
 import { PatientModal } from '../PatientModal'
@@ -12,6 +13,7 @@ import { PanelSkeleton } from '../PanelSkeleton'
 
 export function Pacientes() {
   const { profile } = useAuth()
+  const { focusPatientId, clearFocus } = useNavigation()
   const role = profile?.role
   const [patients, setPatients] = useState<Patient[]>([])
   const [plans, setPlans] = useState<MealPlan[]>([])
@@ -33,6 +35,17 @@ export function Pacientes() {
   useEffect(() => {
     refresh()
   }, [])
+
+  // Chegou aqui a partir de outro painel (ex.: Dashboard) apontando um paciente — abre o prontuário direto.
+  useEffect(() => {
+    if (!focusPatientId || !patients.length) return
+    const target = patients.find((p) => p.id === focusPatientId)
+    if (target) {
+      setTab(target.status === 'Internado' ? 'internados' : 'alta')
+      setDetailFor(target)
+    }
+    clearFocus()
+  }, [focusPatientId, patients])
 
   async function handleDischarge(p: Patient) {
     if (!confirm('Confirmar alta médica deste paciente?')) return
@@ -106,24 +119,27 @@ export function Pacientes() {
           const status = plan?.status ?? '—'
           return (
             <div className="pc" key={p.id}>
-              <div className="pav" style={{ background: 'var(--acc-d)', color: 'var(--acc)' }}>
-                {initials(p.name)}
-              </div>
-              <div className="pi">
-                <div className="pn">{p.name}</div>
-                <div className="pm">
-                  Quarto {p.room} · {p.age} anos · {p.gender || '—'}
+              <button type="button" className="pc-main" onClick={() => setDetailFor(p)}>
+                <div className="pav" style={{ background: 'var(--acc-d)', color: 'var(--acc)' }}>
+                  {initials(p.name)}
                 </div>
-                <div className="pm" style={{ marginTop: 6 }}>
-                  <span className={`bg ${riskBadgeClass(p.nutritional_risk)}`}>Risco {p.nutritional_risk.toLowerCase()}</span>
-                  <span className="bg bg-n">Dieta {p.diet_type}</span>
-                  {p.conditions.slice(0, 2).map((c) => (
-                    <span className="bg bg-n" key={c}>
-                      {c}
-                    </span>
-                  ))}
+                <div className="pi">
+                  <div className="pn">{p.name}</div>
+                  <div className="pm">
+                    Quarto {p.room} · {p.age} anos · {p.gender || '—'}
+                  </div>
+                  <div className="pm" style={{ marginTop: 6 }}>
+                    <span className={`bg ${riskBadgeClass(p.nutritional_risk)}`}>Risco {p.nutritional_risk.toLowerCase()}</span>
+                    <span className="bg bg-n">Dieta {p.diet_type}</span>
+                    {p.conditions.slice(0, 2).map((c) => (
+                      <span className="bg bg-n" key={c}>
+                        {c}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-              </div>
+                <ChevronRight size={16} className="pc-chevron" />
+              </button>
               <div style={{ textAlign: 'right' }}>
                 <span className={`bg ${status === 'Aprovado' ? 'bg-g' : status === 'Rascunho' ? 'bg-y' : 'bg-n'}`}>{status}</span>
                 <div style={{ fontSize: 11, color: 'var(--t3)', marginTop: 6 }}>{p.status === 'Alta' ? 'Alta médica' : 'Internado'}</div>

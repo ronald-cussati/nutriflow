@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { CheckCircle2, ClipboardList, Pencil, RotateCcw, Sparkles } from 'lucide-react'
+import { CheckCircle2, ChevronRight, ClipboardList, Pencil, RotateCcw, Sparkles } from 'lucide-react'
 import { approvePlan, draftPlan, listPatients, listPlans } from '../../../lib/api'
 import { toast } from '../../../lib/toast'
 import { useAuth } from '../../../lib/authContext'
@@ -84,7 +84,7 @@ export function Planos() {
           return (
             <div className="card" key={p.id}>
               <div className="ch">
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <button type="button" className="plan-card-main" onClick={() => setEditing(p)}>
                   <div className="pav" style={{ background: 'var(--acc-d)', color: 'var(--acc)', width: 38, height: 38, fontSize: 14 }}>
                     {initials(p.name)}
                   </div>
@@ -94,7 +94,8 @@ export function Planos() {
                       Quarto {p.room} · {coverage}/6 refeições definidas
                     </div>
                   </div>
-                </div>
+                  <ChevronRight size={15} className="plan-chevron" />
+                </button>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
                   {plan.generated_by_ai ? (
                     <span className="bg bg-p"><Sparkles size={12} /> IA</span>

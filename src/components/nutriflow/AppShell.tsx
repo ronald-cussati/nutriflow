@@ -13,6 +13,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { useAuth } from '../../lib/authContext'
+import { NavigationProvider } from '../../lib/navigationContext'
 import { ROLE_LABELS, type Role } from '../../lib/types'
 import { avatarColor, bgForRole, initials } from '../../lib/uiHelpers'
 import { ToastHost } from '../../lib/toast'
@@ -150,7 +151,9 @@ export function AppShell() {
             </div>
           </div>
           <div id="content">
-            <Panel />
+            <NavigationProvider onNavigate={selectPanel}>
+              <Panel />
+            </NavigationProvider>
           </div>
         </div>
       </div>
