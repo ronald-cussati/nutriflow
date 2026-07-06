@@ -178,8 +178,8 @@ textarea.fc{resize:vertical;min-height:74px;line-height:1.5}
 .btn:active:not(:disabled){transform:scale(.96)}
 .btn:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
 .btn svg{flex-shrink:0}
-.btn-p{background:var(--acc);color:var(--acc-ink);box-shadow:0 4px 12px rgba(16,185,129,.25)}
-.btn-p:hover{filter:brightness(1.04);transform:translateY(-1px);box-shadow:0 8px 20px rgba(16,185,129,.32)}
+.btn-p{background:linear-gradient(135deg,#047857,#10b981);color:var(--acc-ink);box-shadow:0 4px 12px rgba(16,185,129,.3),inset 0 1px 0 rgba(255,255,255,.2)}
+.btn-p:hover{filter:brightness(1.08);transform:translateY(-1px);box-shadow:0 8px 22px rgba(16,185,129,.4),inset 0 1px 0 rgba(255,255,255,.25)}
 .btn-s{background:var(--surface);color:var(--t2);border:1px solid var(--b2)}
 .btn-s:hover{background:var(--surface-2);color:var(--t1);border-color:var(--b3)}
 .btn-d{background:var(--red-d);color:var(--red);border:1px solid transparent}
