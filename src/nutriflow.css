@@ -282,7 +282,7 @@ tr:hover td{background:var(--surface-2)}
 
 /* ─── PAGE HEADER ─── */
 .ph{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:14px;flex-wrap:wrap}
-.ph h2{font-family:'Sora',sans-serif;font-size:23px;font-weight:700;letter-spacing:-.02em}
+.ph h1{font-family:'Sora',sans-serif;font-size:23px;font-weight:700;letter-spacing:-.02em}
 .ph p{font-size:13px;color:var(--t3);margin-top:4px}
 .ph-acts{display:flex;gap:9px;flex-shrink:0;align-items:center;flex-wrap:wrap}
 

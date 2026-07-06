@@ -57,7 +57,7 @@ export function Planos() {
     <div>
       <div className="ph">
         <div>
-          <h2>Planos Alimentares</h2>
+          <h1>Planos Alimentares</h1>
           <p>Gerenciar e aprovar planos nutricionais</p>
         </div>
         <div className="ph-acts">

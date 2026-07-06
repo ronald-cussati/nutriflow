@@ -9,7 +9,19 @@ import tailwindcss from '@tailwindcss/vite'
 
 const config = defineConfig({
   resolve: { tsconfigPaths: true },
-  plugins: [devtools(), tailwindcss(), tanstackStart(), nitro(), viteReact()],
+  plugins: [
+    devtools(),
+    tailwindcss(),
+    tanstackStart({
+      sitemap: {
+        enabled: true,
+        host: 'https://nutriflow-main.vercel.app',
+      },
+      pages: [{ path: '/' }],
+    }),
+    nitro(),
+    viteReact(),
+  ],
 })
 
 export default config

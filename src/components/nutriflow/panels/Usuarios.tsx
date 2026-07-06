@@ -45,7 +45,7 @@ export function Usuarios() {
     <div>
       <div className="ph">
         <div>
-          <h2>Usuários & permissões</h2>
+          <h1>Usuários & permissões</h1>
           <p>Gestão da equipe e dos acessos por papel</p>
         </div>
         <div className="ph-acts">

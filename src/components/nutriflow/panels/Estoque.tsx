@@ -49,7 +49,7 @@ export function Estoque() {
     <div>
       <div className="ph">
         <div>
-          <h2>Estoque</h2>
+          <h1>Estoque</h1>
           <p>Ingredientes que abastecem a geração de dietas pela IA</p>
         </div>
         <div className="ph-acts">

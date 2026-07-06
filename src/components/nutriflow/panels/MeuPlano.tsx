@@ -46,7 +46,7 @@ export function MeuPlano() {
     <div>
       <div className="ph">
         <div>
-          <h2>Meu Plano Alimentar</h2>
+          <h1>Meu Plano Alimentar</h1>
           <p>
             Quarto {patient.room} · {patient.status}
           </p>

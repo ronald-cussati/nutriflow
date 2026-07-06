@@ -66,7 +66,7 @@ export function Pacientes() {
     <div>
       <div className="ph">
         <div>
-          <h2>Pacientes</h2>
+          <h1>Pacientes</h1>
           <p>Prontuário clínico e acompanhamento nutricional</p>
         </div>
         <div className="ph-acts">

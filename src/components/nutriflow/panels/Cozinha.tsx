@@ -56,7 +56,7 @@ export function Cozinha() {
     <div>
       <div className="ph">
         <div>
-          <h2>Cozinha</h2>
+          <h1>Cozinha</h1>
           <p>Preparo e entrega das refeições em tempo real</p>
         </div>
         <div className="ph-acts">

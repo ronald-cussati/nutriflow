@@ -45,7 +45,7 @@ export function Feedbacks() {
     <div>
       <div className="ph">
         <div>
-          <h2>Feedbacks</h2>
+          <h1>Feedbacks</h1>
           <p>Acompanhe a aceitação alimentar dos pacientes</p>
         </div>
         <div className="ph-acts">

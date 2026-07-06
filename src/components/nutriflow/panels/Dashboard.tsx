@@ -47,7 +47,7 @@ export function Dashboard() {
     <div>
       <div className="ph">
         <div>
-          <h2>Visão geral</h2>
+          <h1>Visão geral</h1>
           <p>Panorama do cuidado nutricional · {new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
         </div>
       </div>
