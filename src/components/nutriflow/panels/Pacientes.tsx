@@ -140,7 +140,7 @@ export function Pacientes() {
                 </div>
                 <ChevronRight size={16} className="pc-chevron" />
               </button>
-              <div style={{ textAlign: 'right' }}>
+              <div className="pc-status">
                 <span className={`bg ${status === 'Aprovado' ? 'bg-g' : status === 'Rascunho' ? 'bg-y' : 'bg-n'}`}>{status}</span>
                 <div style={{ fontSize: 11, color: 'var(--t3)', marginTop: 6 }}>{p.status === 'Alta' ? 'Alta médica' : 'Internado'}</div>
               </div>

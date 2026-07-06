@@ -35,16 +35,17 @@ export function Modal({
   // transform/animation (o rise-in dos painéis) vire "containing block" e
   // prenda o modal fixed dentro de um retângulo menor em vez da viewport inteira.
   return createPortal(
-    <div className="mo on">
-      <div className="mh">
-        <div className={`mh-inner ${large ? 'mh-inner-lg' : ''}`}>
+    <div className="nf mo on">
+      <div className="mo-backdrop" onClick={onClose} aria-hidden="true" />
+      <div className={`mo-box ${large ? 'mo-box-lg' : ''}`}>
+        <div className="mh">
           <div className="mt">{title}</div>
           <button type="button" className="mc" onClick={onClose} aria-label="Fechar">
             <X size={18} />
           </button>
         </div>
+        <div className="mb">{children}</div>
       </div>
-      <div className={`mb ${large ? 'mb-lg' : ''}`}>{children}</div>
     </div>,
     document.body,
   )
