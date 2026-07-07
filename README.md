@@ -1,7 +1,7 @@
 # 🥗 NutriFlow AI
 
 Sistema de gestão nutricional hospitalar com inteligência artificial — trabalho de
-extensão interdisciplinar (PAI) que une prontuário clínico, fluxo de cozinha em
+extensão interdisciplinar (PEI) que une prontuário clínico, fluxo de cozinha em
 tempo real e geração de dietas por IA num único fluxo: **médico → nutricionista →
 cozinha → paciente**.
 
@@ -75,4 +75,4 @@ npm run test       # testes (Vitest)
 ---
 
 Projeto acadêmico desenvolvido para a disciplina de Prática de Extensão
-Interdisciplinar (PAI).
+Interdisciplinar (PEI).
